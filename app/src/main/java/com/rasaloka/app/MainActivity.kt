@@ -4,13 +4,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.rasaloka.app.ui.screen.HomeScreen
+import com.rasaloka.app.ui.screen.LoginScreen
 import com.rasaloka.app.ui.theme.RasaLokaV20Theme
 
 class MainActivity : ComponentActivity() {
@@ -19,29 +21,42 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             RasaLokaV20Theme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                // NavigasiUtama adalah tempat kita mengatur perpindahan layar
+                NavigasiUtama()
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+fun NavigasiUtama() {
+    // Pengendali navigasi
+    val navController = rememberNavController()
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    RasaLokaV20Theme {
-        Greeting("Android")
+    Scaffold { innerPadding ->
+        // NavHost menentukan layar mana yang muncul berdasarkan "route"
+        NavHost(
+            navController = navController,
+            startDestination = "login", // Layar pertama yang muncul
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            // Rute untuk Layar Login
+            composable("login") {
+                LoginScreen(
+                    onLoginSuccess = {
+                        // Ketika login sukses, pindah ke rute "home"
+                        navController.navigate("home") {
+                            // Menghapus layar login dari tumpukan agar user tidak bisa kembali ke login dengan tombol back
+                            popUpTo("login") { inclusive = true }
+                        }
+                    }
+                )
+            }
+
+            // Rute untuk Halaman Utama
+            composable("home") {
+                HomeScreen()
+            }
+        }
     }
 }
