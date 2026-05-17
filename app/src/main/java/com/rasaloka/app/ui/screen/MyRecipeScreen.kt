@@ -20,6 +20,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,29 +34,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.foundation.border
+import androidx.compose.foundation.border
+import androidx.compose.ui.text.style.TextAlign
 import com.rasaloka.app.R
 
-data class SavedRecipe(
+data class MyRecipe(
     val title: String,
     val image: Int
 )
 
 @Composable
-fun SavedScreen(navController: NavController) {
+fun MyRecipeScreen(navController: NavController) {
 
-    val savedRecipes = listOf(
-        SavedRecipe("Margherita Pizza", R.drawable.pizza),
-        SavedRecipe("Grilled Salmon", R.drawable.salmon),
-        SavedRecipe("Margherita Pizza", R.drawable.pizza),
-        SavedRecipe("Grilled Salmon", R.drawable.salmon),
-        SavedRecipe("Margherita Pizza", R.drawable.pizza),
-        SavedRecipe("Grilled Salmon", R.drawable.salmon),
-        SavedRecipe("Margherita Pizza", R.drawable.pizza),
-        SavedRecipe("Grilled Salmon", R.drawable.salmon),
+    val myRecipes = listOf(
+        MyRecipe("Margherita Pizza", R.drawable.pizza),
+        MyRecipe("Grilled Salmon", R.drawable.salmon),
+        MyRecipe("Margherita Pizza", R.drawable.pizza),
+        MyRecipe("Grilled Salmon", R.drawable.salmon),
+        MyRecipe("Margherita Pizza", R.drawable.pizza),
+        MyRecipe("Grilled Salmon", R.drawable.salmon),
+        MyRecipe("Margherita Pizza", R.drawable.pizza),
+        MyRecipe("Grilled Salmon", R.drawable.salmon),
     )
 
     Scaffold(
@@ -65,6 +69,7 @@ fun SavedScreen(navController: NavController) {
                     .fillMaxWidth()
                     .height(65.dp)
                     .background(Color.White),
+
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -75,8 +80,8 @@ fun SavedScreen(navController: NavController) {
                     modifier = Modifier
                         .weight(1f)
                         .clickable {
-                        navController.navigate("home")
-                    }
+                            navController.navigate("home")
+                        }
                 ) {
 
                     Spacer(modifier = Modifier.height(10.dp))
@@ -95,7 +100,33 @@ fun SavedScreen(navController: NavController) {
                     )
                 }
 
-                // SAVE ACTIVE
+                // SAVE
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable {
+                            navController.navigate("saved")
+                        }
+                ) {
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Icon(
+                        Icons.Outlined.BookmarkBorder,
+                        contentDescription = null,
+                        modifier = Modifier.size(22.dp),
+                        tint = Color.Gray
+                    )
+
+                    Text(
+                        "Resep Tersimpan",
+                        fontSize = 10.sp,
+                        color = Color.Gray
+                    )
+                }
+
+                // RESEP SAYA ACTIVE
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
@@ -115,41 +146,17 @@ fun SavedScreen(navController: NavController) {
                     Spacer(modifier = Modifier.height(6.dp))
 
                     Icon(
-                        Icons.Outlined.BookmarkBorder,
+                        Icons.Outlined.RestaurantMenu,
                         contentDescription = null,
                         modifier = Modifier.size(22.dp),
                         tint = Color(0xFFFF5722)
                     )
 
                     Text(
-                        "Resep Tersimpan",
+                        "Resep Saya",
                         fontSize = 10.sp,
                         color = Color(0xFFFF5722),
                         fontWeight = FontWeight.Bold
-                    )
-                }
-
-                // RESEP SAYA
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable { navController.navigate("myrecipe")}
-                ) {
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Icon(
-                        Icons.Outlined.RestaurantMenu,
-                        contentDescription = null,
-                        modifier = Modifier.size(22.dp),
-                        tint = Color.Gray
-                    )
-
-                    Text(
-                        "Resep Saya",
-                        fontSize = 10.sp,
-                        color = Color.Gray
                     )
                 }
 
@@ -193,17 +200,47 @@ fun SavedScreen(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(70.dp)
-                    .background(Color(0xFFFF5722)),
-                contentAlignment = Alignment.CenterStart
+                    .background(Color(0xFFFF5722))
+                    .padding(horizontal = 20.dp),
+
+                contentAlignment = Alignment.Center
             ) {
 
-                Text(
-                    text = "Resep Tersimpan",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    modifier = Modifier.padding(start = 20.dp)
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    Text(
+                        text = "Resep Saya",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable { }
+                    ) {
+
+                        Text(
+                            text = "Tambah",
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+
+                        Spacer(modifier = Modifier.width(4.dp))
+
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Tambah",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -222,9 +259,10 @@ fun SavedScreen(navController: NavController) {
                 verticalArrangement = Arrangement.spacedBy(18.dp),
                 horizontalArrangement = Arrangement.spacedBy(18.dp),
 
+                modifier = Modifier.fillMaxSize()
             ) {
 
-                items(savedRecipes) { recipe ->
+                items(myRecipes) { recipe ->
 
                     Card(
                         shape = RoundedCornerShape(16.dp),
@@ -279,32 +317,63 @@ fun SavedScreen(navController: NavController) {
 
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.End
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
 
-                                    var isSaved by remember {
-                                        mutableStateOf(true)
-                                    }
-
-                                    Icon(
-                                        imageVector = if (isSaved)
-                                            Icons.Filled.Bookmark
-                                        else
-                                            Icons.Outlined.BookmarkBorder,
-
-                                        contentDescription = "Save",
-
-                                        tint = if (isSaved)
-                                            Color(0xFFFF5722)
-                                        else
-                                            Color.Gray,
+                                    // BUTTON EDIT
+                                    Box(
+                                        contentAlignment = Alignment.Center,
 
                                         modifier = Modifier
-                                            .size(18.dp)
-                                            .clickable {
-                                                isSaved = !isSaved
-                                            }
-                                    )
+                                            .weight(1f)
+                                            .border(
+                                                1.dp,
+                                                Color(0xFFFF5722),
+                                                RoundedCornerShape(20.dp)
+                                            )
+                                            .clip(RoundedCornerShape(20.dp))
+                                            .background(Color(0xFFFFF9F3))
+                                            .clickable { }
+                                            .padding(vertical = 6.dp)
+                                    ) {
+
+                                        Text(
+                                            text = "Edit",
+                                            color = Color(0xFFFF5722),
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            textAlign = TextAlign.Center,
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
+                                    }
+
+                                    // BUTTON HAPUS
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .border(
+                                                1.dp,
+                                                Color(0xFFFF5722),
+                                                RoundedCornerShape(20.dp)
+                                            )
+                                            .clip(RoundedCornerShape(20.dp))
+                                            .background(Color(0xFFFFF9F3))
+                                            .clickable { }
+                                            .padding(vertical = 6.dp)
+                                    ) {
+
+                                        Text(
+                                            text = "Hapus",
+                                            color = Color(0xFFFF5722),
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            textAlign = TextAlign.Center,
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
+                                    }
                                 }
                             }
                         }
