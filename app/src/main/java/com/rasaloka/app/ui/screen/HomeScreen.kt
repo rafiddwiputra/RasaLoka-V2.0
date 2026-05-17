@@ -153,7 +153,7 @@ fun HomeScreen(navController: NavController) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .weight(1f)
-                        .clickable { }
+                        .clickable {navController.navigate("profil") }
                 ) {
 
                     Spacer(modifier = Modifier.height(10.dp))

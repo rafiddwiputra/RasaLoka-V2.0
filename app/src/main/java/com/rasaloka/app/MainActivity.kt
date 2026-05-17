@@ -16,6 +16,7 @@ import com.rasaloka.app.ui.screen.LoginScreen
 import com.rasaloka.app.ui.theme.RasaLokaV20Theme
 import com.rasaloka.app.ui.screen.SavedScreen
 import com.rasaloka.app.ui.screen.MyRecipeScreen
+import com.rasaloka.app.ui.screen.ProfilScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,6 +67,10 @@ fun NavigasiUtama() {
 
             composable("myrecipe") {
                 MyRecipeScreen(navController)
+            }
+
+            composable("profil") {
+                ProfilScreen(navController)
             }
         }
     }
