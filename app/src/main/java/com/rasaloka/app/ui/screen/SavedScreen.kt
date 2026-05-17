@@ -2,22 +2,23 @@ package com.rasaloka.app.ui.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.ShoppingCart
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.runtime.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.outlined.RestaurantMenu
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,31 +29,35 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.material.icons.outlined.ChatBubbleOutline
-import androidx.compose.material.icons.outlined.BookmarkBorder
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.outlined.RestaurantMenu
 import androidx.navigation.NavController
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import com.rasaloka.app.R
 
-data class Recipe(
+data class SavedRecipe(
     val title: String,
     val image: Int
 )
 
 @Composable
-fun HomeScreen(navController: NavController) {
+fun SavedScreen(navController: NavController) {
 
-    val recipes = listOf(
-        Recipe("Margherita Pizza", R.drawable.pizza),
-        Recipe("Grilled Salmon", R.drawable.salmon),
-        Recipe("Margherita Pizza", R.drawable.pizza),
-        Recipe("Grilled Salmon", R.drawable.salmon),
-        Recipe("Margherita Pizza", R.drawable.pizza),
-        Recipe("Grilled Salmon", R.drawable.salmon),
+    val savedRecipes = listOf(
+        SavedRecipe("Margherita Pizza", R.drawable.pizza),
+        SavedRecipe("Grilled Salmon", R.drawable.salmon),
+        SavedRecipe("Margherita Pizza", R.drawable.pizza),
+        SavedRecipe("Grilled Salmon", R.drawable.salmon),
+        SavedRecipe("Margherita Pizza", R.drawable.pizza),
+        SavedRecipe("Grilled Salmon", R.drawable.salmon),
+        SavedRecipe("Margherita Pizza", R.drawable.pizza),
+        SavedRecipe("Grilled Salmon", R.drawable.salmon),
     )
 
     Scaffold(
+
+        // FOOTER
         bottomBar = {
 
             Row(
@@ -64,7 +69,33 @@ fun HomeScreen(navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                // HOME ACTIVE
+                // HOME
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable {
+                        navController.navigate("home")
+                    }
+                ) {
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Icon(
+                        Icons.Outlined.Home,
+                        contentDescription = null,
+                        modifier = Modifier.size(22.dp),
+                        tint = Color.Gray
+                    )
+
+                    Text(
+                        "Beranda",
+                        fontSize = 10.sp,
+                        color = Color.Gray
+                    )
+                }
+
+                // SAVE ACTIVE
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
@@ -84,47 +115,21 @@ fun HomeScreen(navController: NavController) {
                     Spacer(modifier = Modifier.height(6.dp))
 
                     Icon(
-                        Icons.Outlined.Home,
+                        Icons.Outlined.BookmarkBorder,
                         contentDescription = null,
                         modifier = Modifier.size(22.dp),
                         tint = Color(0xFFFF5722)
                     )
 
                     Text(
-                        "Beranda",
+                        "Resep Tersimpan",
                         fontSize = 10.sp,
                         color = Color(0xFFFF5722),
                         fontWeight = FontWeight.Bold
                     )
                 }
 
-                // SAVE
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable {
-                        navController.navigate("saved")
-                    }
-                ) {
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Icon(
-                        Icons.Outlined.BookmarkBorder,
-                        contentDescription = null,
-                        modifier = Modifier.size(22.dp),
-                        tint = Color.Gray
-                    )
-
-                    Text(
-                        "Resep Tersimpan",
-                        fontSize = 10.sp,
-                        color = Color.Gray
-                    )
-                }
-
-                // resep saya
+                // RESEP SAYA
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
@@ -173,6 +178,7 @@ fun HomeScreen(navController: NavController) {
                 }
             }
         }
+
     ) { padding ->
 
         Column(
@@ -186,73 +192,26 @@ fun HomeScreen(navController: NavController) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp)
-                    .background(Color(0xFFFF5722))
-                    .padding(20.dp)
-            ) {
-
-                Column {
-                    Text(
-                        text = "Selamat Datang",
-                        color = Color.White,
-                        fontSize = 14.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        text = "Apa yang ingin kamu masak hari ini?",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
-                    )
-                }
-            }
-
-            // SEARCH BAR
-            OutlinedTextField(
-                value = "",
-                onValueChange = {},
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFFFF5722),
-                    unfocusedBorderColor = Color(0xFFFF5722)
-                ),
-                leadingIcon = {
-                    Icon(Icons.Outlined.Search, contentDescription = null)
-                },
-                placeholder = {
-                    Text("Cari Resep...")
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(16.dp)
-            )
-
-            // TITLE
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .height(70.dp)
+                    .background(Color(0xFFFF5722)),
+                contentAlignment = Alignment.CenterStart
             ) {
 
                 Text(
-                    text = "Semua Resep",
-                    fontWeight = FontWeight.Bold
-                )
-
-                Text(
-                    text = "Lihat Semua",
-                    color = Color(0xFFFF5722)
+                    text = "Resep Tersimpan",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    modifier = Modifier.padding(start = 20.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // GRID RESEP
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
+
                 contentPadding = PaddingValues(
                     start = 18.dp,
                     end = 18.dp,
@@ -265,22 +224,17 @@ fun HomeScreen(navController: NavController) {
 
             ) {
 
-                items(recipes) { recipe ->
-
-                    var isLiked by remember {
-                        mutableStateOf(false)
-                    }
-
-                    var isSaved by remember {
-                        mutableStateOf(false)
-                    }
+                items(savedRecipes) { recipe ->
 
                     Card(
                         shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(4.dp),
+
                         colors = CardDefaults.cardColors(
                             containerColor = Color.White
                         ),
+
+                        elevation = CardDefaults.cardElevation(4.dp),
+
                         modifier = Modifier.fillMaxWidth()
                     ) {
 
@@ -289,7 +243,9 @@ fun HomeScreen(navController: NavController) {
                             Image(
                                 painter = painterResource(id = recipe.image),
                                 contentDescription = null,
+
                                 contentScale = ContentScale.Crop,
+
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(120.dp)
@@ -319,53 +275,17 @@ fun HomeScreen(navController: NavController) {
                                     color = Color.Gray
                                 )
 
-                                Spacer(modifier = Modifier.height(10.dp))
+                                Spacer(modifier = Modifier.height(8.dp))
 
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
+                                    horizontalArrangement = Arrangement.End
                                 ) {
 
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-
-                                        // LIKE
-                                        Icon(
-                                            imageVector = if (isLiked)
-                                                Icons.Filled.Favorite
-                                            else
-                                                Icons.Outlined.FavoriteBorder,
-
-                                            contentDescription = "Like",
-
-                                            tint = if (isLiked)
-                                                Color.Red
-                                            else
-                                                Color.Gray,
-
-                                            modifier = Modifier
-                                                .size(20.dp)
-                                                .clickable {
-                                                    isLiked = !isLiked
-                                                }
-                                        )
-
-                                        Spacer(modifier = Modifier.width(12.dp))
-
-                                        // COMMENT
-                                        Icon(
-                                            imageVector = Icons.Outlined.ChatBubbleOutline,
-                                            contentDescription = "Comment",
-                                            tint = Color.Gray,
-                                            modifier = Modifier
-                                                .size(20.dp)
-                                                .clickable { }
-                                        )
+                                    var isSaved by remember {
+                                        mutableStateOf(true)
                                     }
 
-                                    // SAVE
                                     Icon(
                                         imageVector = if (isSaved)
                                             Icons.Filled.Bookmark
@@ -380,7 +300,7 @@ fun HomeScreen(navController: NavController) {
                                             Color.Gray,
 
                                         modifier = Modifier
-                                            .size(20.dp)
+                                            .size(18.dp)
                                             .clickable {
                                                 isSaved = !isSaved
                                             }

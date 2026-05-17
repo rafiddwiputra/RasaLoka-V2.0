@@ -14,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import com.rasaloka.app.ui.screen.HomeScreen
 import com.rasaloka.app.ui.screen.LoginScreen
 import com.rasaloka.app.ui.theme.RasaLokaV20Theme
+import com.rasaloka.app.ui.screen.SavedScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,7 +56,11 @@ fun NavigasiUtama() {
 
             // Rute untuk Halaman Utama
             composable("home") {
-                HomeScreen()
+                HomeScreen(navController)
+            }
+
+            composable("saved") {
+                SavedScreen(navController)
             }
         }
     }
