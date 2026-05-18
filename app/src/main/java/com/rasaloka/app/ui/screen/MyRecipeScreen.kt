@@ -238,7 +238,9 @@ fun MyRecipeScreen(navController: NavController) {
                                             .border(1.dp, Color(0xFFFF5722), RoundedCornerShape(20.dp))
                                             .clip(RoundedCornerShape(20.dp))
                                             .background(Color(0xFFFFF9F3))
-                                            .clickable { }
+                                            .clickable {
+                                                navController.navigate("edit_recipe")
+                                            }
                                             .padding(vertical = 6.dp)
                                     ) {
                                         Text(
