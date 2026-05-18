@@ -361,7 +361,9 @@ fun HomeScreen(navController: NavController) {
                                             tint = Color.Gray,
                                             modifier = Modifier
                                                 .size(20.dp)
-                                                .clickable { }
+                                                .clickable {
+                                                    navController.navigate("comment")
+                                                }
                                         )
                                     }
 

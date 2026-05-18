@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.rasaloka.app.ui.screen.CommentScreen
 import com.rasaloka.app.ui.screen.HomeScreen
 import com.rasaloka.app.ui.screen.LoginScreen
 import com.rasaloka.app.ui.theme.RasaLokaV20Theme
@@ -71,6 +72,10 @@ fun NavigasiUtama() {
 
             composable("profil") {
                 ProfilScreen(navController)
+            }
+
+            composable("comment") {
+                CommentScreen(navController)
             }
         }
     }
