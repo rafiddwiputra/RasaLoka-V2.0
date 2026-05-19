@@ -235,7 +235,9 @@ fun SavedScreen(navController: NavController) {
 
                         elevation = CardDefaults.cardElevation(4.dp),
 
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { navController.navigate("detail_recipe") }
                     ) {
 
                         Column {

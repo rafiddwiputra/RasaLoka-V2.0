@@ -193,7 +193,9 @@ fun MyRecipeScreen(navController: NavController) {
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         elevation = CardDefaults.cardElevation(4.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { navController.navigate("detail_recipe") }
                     ) {
                         Column {
                             Image(

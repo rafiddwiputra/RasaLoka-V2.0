@@ -281,7 +281,9 @@ fun HomeScreen(navController: NavController) {
                         colors = CardDefaults.cardColors(
                             containerColor = Color.White
                         ),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { navController.navigate("detail_recipe") }
                     ) {
 
                         Column {
