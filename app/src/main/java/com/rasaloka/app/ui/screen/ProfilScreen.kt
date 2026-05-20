@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ExitToApp
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
@@ -223,7 +224,7 @@ fun ProfilScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // INPUT NAMA
+                // INPUT NAMA (Ubah warna border unfocused ke oren)
                 OutlinedTextField(
                     value = "Pawestri Wahyuning Gusti",
                     onValueChange = {},
@@ -234,7 +235,7 @@ fun ProfilScreen(navController: NavController) {
 
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color(0xFFFF5722),
-                        unfocusedBorderColor = Color.LightGray
+                        unfocusedBorderColor = Color(0xFFFF5722)
                     )
                 )
 
@@ -250,7 +251,7 @@ fun ProfilScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // INPUT EMAIL
+                // INPUT EMAIL (Ubah warna border unfocused ke oren)
                 OutlinedTextField(
                     value = "PawestriWahyuning@gmail.com",
                     onValueChange = {},
@@ -261,16 +262,14 @@ fun ProfilScreen(navController: NavController) {
 
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Color(0xFFFF5722),
-                        unfocusedBorderColor = Color.LightGray
+                        unfocusedBorderColor = Color(0xFFFF5722)
                     )
                 )
 
                 Spacer(modifier = Modifier.height(28.dp))
 
-                // BUTTON KELUAR
-                Box(
-                    contentAlignment = Alignment.Center,
-
+                // BUTTON KELUAR (Disesuaikan isi tampilannya pakai Row + Ikon + Teks bertumpuk)
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .border(
@@ -279,18 +278,36 @@ fun ProfilScreen(navController: NavController) {
                             RoundedCornerShape(14.dp)
                         )
                         .background(
-                            Color(0xFFFFF9F3),
+                            Color.White,
                             RoundedCornerShape(14.dp)
                         )
                         .clickable { }
-                        .padding(vertical = 14.dp)
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-
-                    Text(
-                        text = "Keluar",
-                        color = Color.Red,
-                        fontWeight = FontWeight.Medium
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.ExitToApp,
+                        contentDescription = "Keluar",
+                        tint = Color.Red,
+                        modifier = Modifier.size(24.dp)
                     )
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Column {
+                        Text(
+                            text = "Keluar",
+                            color = Color.Red,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Keluar dari akun Anda",
+                            color = Color.Red.copy(alpha = 0.7f),
+                            fontSize = 12.sp
+                        )
+                    }
                 }
             }
 
@@ -309,7 +326,7 @@ fun ProfilScreen(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth(0.6f)
                     .align(Alignment.CenterHorizontally)
-                    .padding(bottom = 20.dp)
+                    .padding(bottom = 50.dp)
                     .height(50.dp)
             ) {
 

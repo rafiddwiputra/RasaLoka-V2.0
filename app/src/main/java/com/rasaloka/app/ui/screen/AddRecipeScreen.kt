@@ -12,12 +12,17 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.RestaurantMenu
 import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.AddAPhoto
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -125,6 +130,61 @@ fun AddRecipeScreen(navController: NavController) {
                     .padding(horizontal = 20.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
+
+                // ==========================================
+                // KOTAK INPUT FOTO DENGAN GARIS PUTUS-PUTUS
+                // ==========================================
+                Column {
+                    FormLabel(text = "Foto Makanan")
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    val strokeColor = Color(0xFFFFD1C4)
+                    val cornerRadius = 8.dp
+
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(140.dp)
+                            .background(Color.White, RoundedCornerShape(cornerRadius))
+                            .drawBehind {
+                                val strokeWidth = 1.dp.toPx()
+                                val dashPathEffect = PathEffect.dashPathEffect(
+                                    intervals = floatArrayOf(15f, 10f), // 15f panjang garis, 10f jarak spasi
+                                    phase = 0f
+                                )
+
+                                drawRoundRect(
+                                    color = strokeColor,
+                                    style = Stroke(
+                                        width = strokeWidth,
+                                        pathEffect = dashPathEffect
+                                    ),
+                                    cornerRadius = CornerRadius(cornerRadius.toPx())
+                                )
+                            }
+                            .clickable { /* Aksi buka galeri HP */ }
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.AddAPhoto,
+                                contentDescription = "Tambah Foto",
+                                tint = Color(0xFFFF5722),
+                                modifier = Modifier.size(28.dp)
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = "Tambah Foto Makanan",
+                                color = Color.LightGray,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
 
                 // 1. INPUT NAMA MAKANAN
                 Column {

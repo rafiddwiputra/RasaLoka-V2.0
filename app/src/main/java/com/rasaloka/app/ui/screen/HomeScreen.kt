@@ -104,8 +104,8 @@ fun HomeScreen(navController: NavController) {
                     modifier = Modifier
                         .weight(1f)
                         .clickable {
-                        navController.navigate("saved")
-                    }
+                            navController.navigate("saved")
+                        }
                 ) {
 
                     Spacer(modifier = Modifier.height(10.dp))
@@ -242,10 +242,6 @@ fun HomeScreen(navController: NavController) {
                     fontWeight = FontWeight.Bold
                 )
 
-                Text(
-                    text = "Lihat Semua",
-                    color = Color(0xFFFF5722)
-                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -263,7 +259,7 @@ fun HomeScreen(navController: NavController) {
                 verticalArrangement = Arrangement.spacedBy(18.dp),
                 horizontalArrangement = Arrangement.spacedBy(18.dp),
 
-            ) {
+                ) {
 
                 items(recipes) { recipe ->
 
@@ -354,7 +350,16 @@ fun HomeScreen(navController: NavController) {
                                                 }
                                         )
 
-                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Spacer(modifier = Modifier.width(4.dp))
+
+                                        // ANGKA LIKE
+                                        Text(
+                                            text = "25",
+                                            fontSize = 12.sp,
+                                            color = Color.Black
+                                        )
+
+                                        Spacer(modifier = Modifier.width(10.dp))
 
                                         // COMMENT
                                         Icon(
@@ -362,10 +367,19 @@ fun HomeScreen(navController: NavController) {
                                             contentDescription = "Comment",
                                             tint = Color.Gray,
                                             modifier = Modifier
-                                                .size(20.dp)
+                                                .size(18.dp)
                                                 .clickable {
                                                     navController.navigate("comment")
                                                 }
+                                        )
+
+                                        Spacer(modifier = Modifier.width(4.dp))
+
+                                        // ANGKA COMMENT
+                                        Text(
+                                            text = "25",
+                                            fontSize = 12.sp,
+                                            color = Color.Black
                                         )
                                     }
 
