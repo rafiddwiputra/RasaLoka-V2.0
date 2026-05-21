@@ -85,12 +85,30 @@ fun NavigasiUtama() {
                 AddRecipeScreen(navController)
             }
 
-            composable("edit_recipe") {
-                EditRecipeScreen(navController)
+            composable(
+                route = "edit_recipe/{recipeId}"
+            ) { backStackEntry ->
+
+                val recipeId =
+                    backStackEntry.arguments?.getString("recipeId") ?: ""
+
+                EditRecipeScreen(
+                    navController = navController,
+                    recipeId = recipeId
+                )
             }
 
-            composable("detail_recipe") {
-                DetailRecipeScreen(navController)
+            composable(
+                route = "detail_recipe/{recipeId}"
+            ) { backStackEntry ->
+
+                val recipeId =
+                    backStackEntry.arguments?.getString("recipeId") ?: ""
+
+                DetailRecipeScreen(
+                    navController = navController,
+                    recipeId = recipeId
+                )
             }
         }
     }

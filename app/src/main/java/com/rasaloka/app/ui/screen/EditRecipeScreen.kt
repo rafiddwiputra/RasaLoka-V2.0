@@ -26,9 +26,87 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import com.rasaloka.app.di.AppModule
+import com.rasaloka.app.viewmodel.RecipeViewModel
+import android.graphics.BitmapFactory
+import android.util.Base64
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 
 @Composable
-fun EditRecipeScreen(navController: NavController) {
+fun EditRecipeScreen(
+    navController: NavController,
+    recipeId: String
+) {
+
+    val context = LocalContext.current
+
+    val viewModel: RecipeViewModel = viewModel(
+        factory = AppModule
+            .provideRecipeViewModelFactory(context)
+    )
+
+    LaunchedEffect(Unit) {
+        viewModel.getRecipeById(recipeId)
+    }
+
+    val recipe by viewModel
+        .selectedRecipe
+        .collectAsState()
+
+    var title by remember { mutableStateOf("") }
+
+    var description by remember { mutableStateOf("") }
+
+    var ingredients by remember { mutableStateOf("") }
+
+    var steps by remember { mutableStateOf("") }
+
+    var imageBase64 by remember {
+        mutableStateOf("")
+    }
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+
+        uri?.let {
+
+            val inputStream =
+                context.contentResolver.openInputStream(it)
+
+            val bytes = inputStream?.use {
+                it.readBytes()
+            }
+
+            imageBase64 = Base64.encodeToString(
+                bytes,
+                Base64.DEFAULT
+            )
+        }
+    }
+
+    LaunchedEffect(recipe) {
+
+        recipe?.let {
+
+            title = it.title
+            description = it.description
+            ingredients = it.ingredients
+            steps = it.steps
+            imageBase64 = it.imageBase64 ?: ""
+        }
+    }
+
     Scaffold(
         // BOTTOM BAR (Resep Saya ACTIVE)
         bottomBar = {
@@ -159,25 +237,52 @@ fun EditRecipeScreen(navController: NavController) {
                                     cornerRadius = CornerRadius(cornerRadius.toPx())
                                 )
                             }
-                            .clickable { /* Aksi buka galeri HP */ }
+                            .clickable {
+                                galleryLauncher.launch("image/*")
+                            }
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.AddAPhoto,
-                                contentDescription = "Tambah Foto",
-                                tint = Color(0xFFFF5722),
-                                modifier = Modifier.size(28.dp)
+                        if (imageBase64.isNotEmpty()) {
+
+                            val imageBytes = Base64.decode(
+                                imageBase64,
+                                Base64.DEFAULT
                             )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = "Tambah Foto Makanan",
-                                color = Color.LightGray,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Medium
+
+                            val bitmap = BitmapFactory.decodeByteArray(
+                                imageBytes,
+                                0,
+                                imageBytes.size
                             )
+
+                            Image(
+                                bitmap = bitmap.asImageBitmap(),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+
+                        } else {
+
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.AddAPhoto,
+                                    contentDescription = "Tambah Foto",
+                                    tint = Color(0xFFFF5722),
+                                    modifier = Modifier.size(28.dp)
+                                )
+
+                                Spacer(modifier = Modifier.height(6.dp))
+
+                                Text(
+                                    text = "Tambah Foto Makanan",
+                                    color = Color.LightGray,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
                         }
                     }
                 }
@@ -186,22 +291,37 @@ fun EditRecipeScreen(navController: NavController) {
                 Column {
                     Text("Nama Makanan", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
                     Spacer(modifier = Modifier.height(6.dp))
-                    EditInputField(initialValue = "Nasi Goreng Spesial", placeholder = "")
+                    EditInputField(
+                        value = title,
+                        onValueChange = {
+                            title = it
+                        },
+                        placeholder = ""
+                    )
                 }
 
-                // 2. INPUT DESKRIPSI (Teks Hitam)
+                // 2. INPUT DESKRIPSI
                 Column {
                     Text("Deskripsi", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
                     Spacer(modifier = Modifier.height(6.dp))
-                    EditInputField(initialValue = "Nasi Goreng Spesial", placeholder = "")
+                    EditInputField(
+                        value = description,
+                        onValueChange = {
+                            description = it
+                        },
+                        placeholder = ""
+                    )
                 }
 
-                // 3. INPUT BAHAN (Multi-line + Sudah Terisi Teks Hitam)
+                // 3. INPUT BAHAN
                 Column {
                     Text("Bahan", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
                     Spacer(modifier = Modifier.height(6.dp))
                     EditInputField(
-                        initialValue = "Masukkan bahan-bahan\nContoh:\n3 Butir Telur\n200g daging ayam",
+                        value = ingredients,
+                        onValueChange = {
+                            ingredients = it
+                        },
                         placeholder = "",
                         isMultiLine = true
                     )
@@ -212,7 +332,10 @@ fun EditRecipeScreen(navController: NavController) {
                     Text("Langkah Memasak", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
                     Spacer(modifier = Modifier.height(6.dp))
                     EditInputField(
-                        initialValue = "Masukkan bahan-bahan\nContoh:\n3 Butir Telur\n200g daging ayam",
+                        value = steps,
+                        onValueChange = {
+                            steps = it
+                        },
                         placeholder = "",
                         isMultiLine = true
                     )
@@ -240,7 +363,39 @@ fun EditRecipeScreen(navController: NavController) {
 
                     // Simpan Resep
                     Button(
-                        onClick = { navController.popBackStack() },
+                        onClick = {
+
+                            recipe?.let {
+
+                                val updatedRecipe = it.copy(
+                                    title = title,
+                                    description = description,
+                                    ingredients = ingredients,
+                                    steps = steps,
+                                    imageBase64 = imageBase64
+                                )
+
+                                viewModel.updateRecipe(
+                                    recipe = updatedRecipe,
+
+                                    recipeEntity = com.rasaloka.app.data.local.entity.RecipeEntity(
+                                        id = updatedRecipe.id,
+                                        userId = updatedRecipe.userId,
+                                        username = updatedRecipe.username,
+                                        title = updatedRecipe.title,
+                                        description = updatedRecipe.description,
+                                        ingredients = updatedRecipe.ingredients,
+                                        steps = updatedRecipe.steps,
+                                        imageBase64 = updatedRecipe.imageBase64,
+                                        likesCount = updatedRecipe.likesCount,
+                                        commentsCount = updatedRecipe.commentsCount,
+                                        createdAt = updatedRecipe.createdAt
+                                    )
+                                )
+
+                                navController.popBackStack()
+                            }
+                        },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
@@ -257,12 +412,17 @@ fun EditRecipeScreen(navController: NavController) {
 
 // Komponen Input Khusus Halaman Edit (Tinggi Ideal 56.dp, Anti-Potong Teks)
 @Composable
-fun EditInputField(initialValue: String, placeholder: String, isMultiLine: Boolean = false) {
-    var textValue by remember { mutableStateOf(initialValue) }
+fun EditInputField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    isMultiLine: Boolean = false
+) {
+
 
     OutlinedTextField(
-        value = textValue,
-        onValueChange = { textValue = it },
+        value = value,
+        onValueChange = onValueChange,
         placeholder = {
             if (placeholder.isNotEmpty()) {
                 Text(text = placeholder, color = Color.LightGray, fontSize = 13.sp, lineHeight = 18.sp)

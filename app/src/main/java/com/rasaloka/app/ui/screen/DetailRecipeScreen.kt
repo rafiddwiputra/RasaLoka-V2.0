@@ -29,23 +29,49 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.rasaloka.app.di.AppModule
+import com.rasaloka.app.viewmodel.RecipeViewModel
+import android.graphics.BitmapFactory
+import android.util.Base64
+import androidx.compose.ui.graphics.asImageBitmap
 import com.rasaloka.app.R
 
 @Composable
-fun DetailRecipeScreen(navController: NavController) {
+fun DetailRecipeScreen(
+    navController: NavController,
+    recipeId: String
+) {
 
-    val bahanList = listOf(
-        "2 gelas tepung terigu",
-        "2 gelas tepung terigu",
-        "2 gelas tepung terigu",
-        "2 gelas tepung terigu",
-        "2 gelas tepung terigu"
+    val context = LocalContext.current
+
+    val viewModel: RecipeViewModel = viewModel(
+        factory = AppModule
+            .provideRecipeViewModelFactory(context)
     )
 
-    val langkahList = listOf(
-        "Campur tepung, garam dan ragi dalam mangkuk",
-        "Campur tepung, garam dan ragi dalam mangkuk"
-    )
+    val recipe by viewModel
+        .selectedRecipe
+        .collectAsState()
+
+    LaunchedEffect(Unit) {
+
+        viewModel.getRecipeById(recipeId)
+    }
+
+    val bahanList =
+        recipe?.ingredients
+            ?.split("\n")
+            ?: emptyList()
+
+    val langkahList =
+        recipe?.steps
+            ?.split("\n")
+            ?: emptyList()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -105,15 +131,41 @@ fun DetailRecipeScreen(navController: NavController) {
                             .background(Color.White, RoundedCornerShape(16.dp))
                             .padding(12.dp)
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.pizza),
-                            contentDescription = "Margherita Pizza",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(180.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                        )
+                        if (!recipe?.imageBase64.isNullOrEmpty()) {
+
+                            val imageBytes = Base64.decode(
+                                recipe?.imageBase64,
+                                Base64.DEFAULT
+                            )
+
+                            val bitmap = BitmapFactory.decodeByteArray(
+                                imageBytes,
+                                0,
+                                imageBytes.size
+                            )
+
+                            Image(
+                                bitmap = bitmap.asImageBitmap(),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(180.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                            )
+
+                        } else {
+
+                            Image(
+                                painter = painterResource(id = R.drawable.pizza),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(180.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                            )
+                        }
 
                         Spacer(modifier = Modifier.height(12.dp))
 
@@ -139,10 +191,11 @@ fun DetailRecipeScreen(navController: NavController) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Text(text = "Margherita Pizza", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.Black)
+                    Text(
+                        text = recipe?.title ?: "", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.Black)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Pizza klasik Italia dengan basil segar dan mozarella yang lezat",
+                        text = recipe?.description ?: "",
                         fontSize = 12.sp,
                         color = Color.Gray,
                         lineHeight = 16.sp

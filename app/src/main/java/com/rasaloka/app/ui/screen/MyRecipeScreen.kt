@@ -27,32 +27,38 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.rasaloka.app.R
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import com.rasaloka.app.viewmodel.RecipeViewModel
+import com.rasaloka.app.di.AppModule
+import android.util.Base64
+import androidx.compose.ui.graphics.asImageBitmap
+import android.graphics.BitmapFactory
+import com.rasaloka.app.data.local.entity.RecipeEntity
 
-data class MyRecipe(
-    val title: String,
-    val image: Int
-)
 
 @Composable
 fun MyRecipeScreen(navController: NavController) {
 
-    val myRecipes = listOf(
-        MyRecipe("Margherita Pizza", R.drawable.pizza),
-        MyRecipe("Grilled Salmon", R.drawable.salmon),
-        MyRecipe("Margherita Pizza", R.drawable.pizza),
-        MyRecipe("Grilled Salmon", R.drawable.salmon),
-        MyRecipe("Margherita Pizza", R.drawable.pizza),
-        MyRecipe("Grilled Salmon", R.drawable.salmon),
-        MyRecipe("Margherita Pizza", R.drawable.pizza),
-        MyRecipe("Grilled Salmon", R.drawable.salmon),
+    val context = LocalContext.current
+
+    val viewModel: RecipeViewModel = viewModel(
+        factory = AppModule.provideRecipeViewModelFactory(context)
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.observeRecipes()
+    }
+
+    val recipes by viewModel.recipes.collectAsState()
 
     Scaffold(
         // FOOTER
@@ -188,25 +194,47 @@ fun MyRecipeScreen(navController: NavController) {
                 horizontalArrangement = Arrangement.spacedBy(18.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(myRecipes) { recipe ->
+                items(recipes) { recipe ->
                     Card(
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         elevation = CardDefaults.cardElevation(4.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { navController.navigate("detail_recipe") }
+                            .clickable {
+                                navController.navigate("detail_recipe/${recipe.id}")
+                            }
                     ) {
                         Column {
-                            Image(
-                                painter = painterResource(id = recipe.image),
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(120.dp)
-                                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                            )
+
+                            if (recipe.imageBase64.isNotEmpty()) {
+
+                                val imageBytes = Base64.decode(
+                                    recipe.imageBase64,
+                                    Base64.DEFAULT
+                                )
+
+                                val bitmap = BitmapFactory.decodeByteArray(
+                                    imageBytes,
+                                    0,
+                                    imageBytes.size
+                                )
+
+                                Image(
+                                    bitmap = bitmap.asImageBitmap(),
+                                    contentDescription = recipe.title,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(120.dp)
+                                        .clip(
+                                            RoundedCornerShape(
+                                                topStart = 16.dp,
+                                                topEnd = 16.dp
+                                            )
+                                        )
+                                )
+                            }
 
                             Column(
                                 modifier = Modifier.padding(10.dp)
@@ -220,7 +248,7 @@ fun MyRecipeScreen(navController: NavController) {
                                 Spacer(modifier = Modifier.height(4.dp))
 
                                 Text(
-                                    text = "Makanan lezat dan mudah dibuat",
+                                    text = recipe.description,
                                     fontSize = 11.sp,
                                     color = Color.Gray
                                 )
@@ -241,7 +269,9 @@ fun MyRecipeScreen(navController: NavController) {
                                             .clip(RoundedCornerShape(20.dp))
                                             .background(Color(0xFFFFF9F3))
                                             .clickable {
-                                                navController.navigate("edit_recipe")
+                                                navController.navigate(
+                                                    "edit_recipe/${recipe.id}"
+                                                )
                                             }
                                             .padding(vertical = 6.dp)
                                     ) {
@@ -263,7 +293,27 @@ fun MyRecipeScreen(navController: NavController) {
                                             .border(1.dp, Color(0xFFFF5722), RoundedCornerShape(20.dp))
                                             .clip(RoundedCornerShape(20.dp))
                                             .background(Color(0xFFFFF9F3))
-                                            .clickable { }
+                                            .clickable {
+
+                                                val recipeEntity = RecipeEntity(
+                                                    id = recipe.id,
+                                                    userId = recipe.userId,
+                                                    username = recipe.username,
+                                                    title = recipe.title,
+                                                    description = recipe.description,
+                                                    ingredients = recipe.ingredients,
+                                                    steps = recipe.steps,
+                                                    imageBase64 = recipe.imageBase64,
+                                                    likesCount = recipe.likesCount,
+                                                    commentsCount = recipe.commentsCount,
+                                                    createdAt = recipe.createdAt
+                                                )
+
+                                                viewModel.deleteRecipe(
+                                                    recipe.id,
+                                                    recipeEntity
+                                                )
+                                            }
                                             .padding(vertical = 6.dp)
                                     ) {
                                         Text(

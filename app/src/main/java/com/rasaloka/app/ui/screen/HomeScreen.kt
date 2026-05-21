@@ -33,24 +33,34 @@ import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.outlined.RestaurantMenu
 import androidx.navigation.NavController
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.rasaloka.app.di.AppModule
+import com.rasaloka.app.viewmodel.RecipeViewModel
+import android.graphics.BitmapFactory
+import android.util.Base64
+import androidx.compose.ui.graphics.asImageBitmap
 import com.rasaloka.app.R
 
-data class Recipe(
-    val title: String,
-    val image: Int
-)
 
 @Composable
 fun HomeScreen(navController: NavController) {
 
-    val recipes = listOf(
-        Recipe("Margherita Pizza", R.drawable.pizza),
-        Recipe("Grilled Salmon", R.drawable.salmon),
-        Recipe("Margherita Pizza", R.drawable.pizza),
-        Recipe("Grilled Salmon", R.drawable.salmon),
-        Recipe("Margherita Pizza", R.drawable.pizza),
-        Recipe("Grilled Salmon", R.drawable.salmon),
+    val context = LocalContext.current
+
+    val viewModel: RecipeViewModel = viewModel(
+        factory = AppModule
+            .provideRecipeViewModelFactory(context)
     )
+
+    val recipes by viewModel.recipes.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.observeRecipes()
+    }
 
     Scaffold(
         bottomBar = {
@@ -279,25 +289,61 @@ fun HomeScreen(navController: NavController) {
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { navController.navigate("detail_recipe") }
+                            .clickable {
+
+                                navController.navigate(
+                                    "detail_recipe/${recipe.id}"
+                                )
+                            }
                     ) {
 
                         Column {
 
-                            Image(
-                                painter = painterResource(id = recipe.image),
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(120.dp)
-                                    .clip(
-                                        RoundedCornerShape(
-                                            topStart = 16.dp,
-                                            topEnd = 16.dp
+                            if (recipe.imageBase64.isNotEmpty()) {
+
+                                val imageBytes = Base64.decode(
+                                    recipe.imageBase64,
+                                    Base64.DEFAULT
+                                )
+
+                                val bitmap = BitmapFactory.decodeByteArray(
+                                    imageBytes,
+                                    0,
+                                    imageBytes.size
+                                )
+
+                                Image(
+                                    bitmap = bitmap.asImageBitmap(),
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(120.dp)
+                                        .clip(
+                                            RoundedCornerShape(
+                                                topStart = 16.dp,
+                                                topEnd = 16.dp
+                                            )
                                         )
-                                    )
-                            )
+                                )
+
+                            } else {
+
+                                Image(
+                                    painter = painterResource(id = R.drawable.pizza),
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(120.dp)
+                                        .clip(
+                                            RoundedCornerShape(
+                                                topStart = 16.dp,
+                                                topEnd = 16.dp
+                                            )
+                                        )
+                                )
+                            }
 
                             Column(
                                 modifier = Modifier.padding(10.dp)
@@ -312,9 +358,10 @@ fun HomeScreen(navController: NavController) {
                                 Spacer(modifier = Modifier.height(4.dp))
 
                                 Text(
-                                    text = "Makanan lezat dan mudah dibuat",
+                                    text = recipe.description,
                                     fontSize = 11.sp,
-                                    color = Color.Gray
+                                    color = Color.Gray,
+                                    maxLines = 2
                                 )
 
                                 Spacer(modifier = Modifier.height(10.dp))

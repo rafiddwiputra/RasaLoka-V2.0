@@ -30,9 +30,90 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.compose.runtime.*
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.platform.LocalContext
+import com.rasaloka.app.di.AppModule
+import com.rasaloka.app.viewmodel.RecipeViewModel
+import com.rasaloka.app.data.local.entity.RecipeEntity
+import java.util.UUID
+import android.net.Uri
+import android.util.Base64
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import java.io.InputStream
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
 
 @Composable
 fun AddRecipeScreen(navController: NavController) {
+
+    val context = LocalContext.current
+
+    val viewModel: RecipeViewModel = viewModel(
+        factory = AppModule
+            .provideRecipeViewModelFactory(context)
+    )
+
+    // =========================
+// STATE FORM
+// =========================
+
+    var title by remember {
+        mutableStateOf("")
+    }
+
+    var description by remember {
+        mutableStateOf("")
+    }
+
+    var ingredients by remember {
+        mutableStateOf("")
+    }
+
+    var steps by remember {
+        mutableStateOf("")
+    }
+
+    var imageBase64 by remember {
+        mutableStateOf("")
+    }
+
+    var errorMessage by remember {
+        mutableStateOf("")
+    }
+
+    var selectedImageUri by remember {
+        mutableStateOf<Uri?>(null)
+    }
+
+    val galleryLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.GetContent()
+        ) { uri: Uri? ->
+
+            uri?.let {
+
+                selectedImageUri = it
+
+                val inputStream: InputStream? =
+                    context.contentResolver.openInputStream(it)
+
+                val bytes =
+                    inputStream?.readBytes()
+
+                inputStream?.close()
+
+                if (bytes != null) {
+
+                    imageBase64 = Base64.encodeToString(
+                        bytes,
+                        Base64.DEFAULT
+                    )
+                }
+            }
+        }
+
     Scaffold(
         // BOTTOM BAR (Bottom Navigation dengan Resep Saya tetap ACTIVE)
         bottomBar = {
@@ -105,7 +186,6 @@ fun AddRecipeScreen(navController: NavController) {
                 .padding(padding)
                 .background(Color(0xFFFFF9F3)) // Background cream senada aplikasi
         ) {
-            // HEADER (Tinggi 70.dp, Rata Kiri, Persis seperti MyRecipeScreen)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -122,7 +202,6 @@ fun AddRecipeScreen(navController: NavController) {
                 )
             }
 
-            // KONTEN FORM (Bisa di-scroll ke bawah kalau keyboard naik)
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -131,9 +210,9 @@ fun AddRecipeScreen(navController: NavController) {
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
 
-                // ==========================================
-                // KOTAK INPUT FOTO DENGAN GARIS PUTUS-PUTUS
-                // ==========================================
+                // ==================
+                // KOTAK INPUT FOTO
+                // ==================
                 Column {
                     FormLabel(text = "Foto Makanan")
                     Spacer(modifier = Modifier.height(6.dp))
@@ -163,25 +242,44 @@ fun AddRecipeScreen(navController: NavController) {
                                     cornerRadius = CornerRadius(cornerRadius.toPx())
                                 )
                             }
-                            .clickable { /* Aksi buka galeri HP */ }
+                            .clickable {
+
+                                galleryLauncher.launch("image/*")
+                            }
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.AddAPhoto,
-                                contentDescription = "Tambah Foto",
-                                tint = Color(0xFFFF5722),
-                                modifier = Modifier.size(28.dp)
+                        if (selectedImageUri != null) {
+
+                            AsyncImage(
+                                model = selectedImageUri,
+                                contentDescription = "Preview Foto",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(8.dp))
                             )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = "Tambah Foto Makanan",
-                                color = Color.LightGray,
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Medium
-                            )
+
+                        } else {
+
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.AddAPhoto,
+                                    contentDescription = "Tambah Foto",
+                                    tint = Color(0xFFFF5722),
+                                    modifier = Modifier.size(28.dp)
+                                )
+
+                                Spacer(modifier = Modifier.height(6.dp))
+
+                                Text(
+                                    text = "Tambah Foto Makanan",
+                                    color = Color.LightGray,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
                         }
                     }
                 }
@@ -190,14 +288,26 @@ fun AddRecipeScreen(navController: NavController) {
                 Column {
                     FormLabel(text = "Nama Makanan")
                     Spacer(modifier = Modifier.height(6.dp))
-                    CustomInputField(placeholder = "Contoh: Nasi Goreng Spesial")
+                    CustomInputField(
+                        value = title,
+                        onValueChange = {
+                            title = it
+                        },
+                        placeholder = "Contoh: Nasi Goreng Spesial"
+                    )
                 }
 
                 // 2. INPUT DESKRIPSI
                 Column {
                     FormLabel(text = "Deskripsi")
                     Spacer(modifier = Modifier.height(6.dp))
-                    CustomInputField(placeholder = "Contoh: Nasi Goreng Spesial")
+                    CustomInputField(
+                        value = description,
+                        onValueChange = {
+                            description = it
+                        },
+                        placeholder = "Contoh: Nasi Goreng Spesial"
+                    )
                 }
 
                 // 3. INPUT BAHAN (Multi-line / Lebih Tinggi)
@@ -205,6 +315,10 @@ fun AddRecipeScreen(navController: NavController) {
                     FormLabel(text = "Bahan")
                     Spacer(modifier = Modifier.height(6.dp))
                     CustomInputField(
+                        value = ingredients,
+                        onValueChange = {
+                            ingredients = it
+                        },
                         placeholder = "Masukkan bahan-bahan\nContoh:\n3 Butir Telur\n200g daging ayam",
                         isMultiLine = true
                     )
@@ -215,8 +329,22 @@ fun AddRecipeScreen(navController: NavController) {
                     FormLabel(text = "Langkah Memasak")
                     Spacer(modifier = Modifier.height(6.dp))
                     CustomInputField(
-                        placeholder = "Masukkan bahan-bahan\nContoh:\n3 Butir Telur\n200g daging ayam",
+                        value = steps,
+                        onValueChange = {
+                            steps = it
+                        },
+                        placeholder = "Masukkan langkah memasak",
                         isMultiLine = true
+                    )
+                }
+
+                if (errorMessage.isNotEmpty()) {
+
+                    Text(
+                        text = errorMessage,
+                        color = Color.Red,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
 
@@ -247,7 +375,71 @@ fun AddRecipeScreen(navController: NavController) {
 
                     // Tombol Simpan Resep
                     Button(
-                        onClick = { /* Logic Simpan data resep */ },
+                        onClick = {
+
+                            if (
+                                title.isBlank() ||
+                                description.isBlank() ||
+                                ingredients.isBlank() ||
+                                steps.isBlank()
+                            ) {
+
+                                errorMessage = "Semua field wajib diisi"
+
+                                return@Button
+                            }
+
+                            errorMessage = ""
+
+                            val recipeId = UUID.randomUUID().toString()
+
+                            // =========================
+                            // FIRESTORE MODEL
+                            // =========================
+
+                            val recipe = com.rasaloka.app.data.model.Recipe(
+                                id = recipeId,
+                                userId = "user_001",
+                                username = "Amanda",
+                                title = title,
+                                description = description,
+                                ingredients = ingredients,
+                                steps = steps,
+                                imageBase64 = imageBase64,
+                                likesCount = 0,
+                                commentsCount = 0,
+                                createdAt = System.currentTimeMillis()
+                            )
+
+                            // =========================
+                            // ROOM ENTITY
+                            // =========================
+
+                            val recipeEntity = RecipeEntity(
+                                id = recipeId,
+                                userId = "user_001",
+                                username = "Amanda",
+                                title = title,
+                                description = description,
+                                ingredients = ingredients,
+                                steps = steps,
+                                imageBase64 = imageBase64,
+                                likesCount = 0,
+                                commentsCount = 0,
+                                createdAt = System.currentTimeMillis()
+                            )
+
+                            // =========================
+                            // SIMPAN
+                            // =========================
+
+                            viewModel.addRecipe(
+                                recipe,
+                                recipeEntity
+                            )
+
+                            navController.popBackStack()
+                        },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5722)),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
@@ -267,7 +459,6 @@ fun AddRecipeScreen(navController: NavController) {
     }
 }
 
-// Komponen Pembantu untuk Label Form Teks + Tanda Bintang Merah (*)
 @Composable
 fun FormLabel(text: String) {
     Text(
@@ -282,13 +473,17 @@ fun FormLabel(text: String) {
     )
 }
 
-// Komponen Pembantu Desain OutlinedTextField yang Serasi Versi Library RasaLoka
 @Composable
-fun CustomInputField(placeholder: String, isMultiLine: Boolean = false) {
+fun CustomInputField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    isMultiLine: Boolean = false
+) {
     OutlinedTextField(
-        value = "",
-        onValueChange = {}, // Kosong murni simulasi klik UI kelompokmu agar teks tidak berubah
-        enabled = true,     // Diubah menjadi true agar sensitif terhadap sentuhan jari dan memicu keyboard naik!
+        value = value,
+        onValueChange = onValueChange,
+        enabled = true,
         placeholder = {
             Text(
                 text = placeholder,
@@ -298,7 +493,7 @@ fun CustomInputField(placeholder: String, isMultiLine: Boolean = false) {
             )
         },
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Color(0xFFFFD1C4), // Warna border oranye soft sesuai gambar UI-mu
+            focusedBorderColor = Color(0xFFFFD1C4),
             unfocusedBorderColor = Color(0xFFFFD1C4),
             focusedContainerColor = Color.White,
             unfocusedContainerColor = Color.White
@@ -309,6 +504,6 @@ fun CustomInputField(placeholder: String, isMultiLine: Boolean = false) {
         maxLines = if (isMultiLine) 6 else 1,
         modifier = Modifier
             .fillMaxWidth()
-            .height(if (isMultiLine) 120.dp else 56.dp) // Mengatur tinggi kolom input otomatis
+            .height(if (isMultiLine) 120.dp else 56.dp)
     )
 }
