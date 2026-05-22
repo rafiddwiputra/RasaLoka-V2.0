@@ -165,4 +165,31 @@ class RecipeViewModel(
             }
         }
     }
+
+// =========================
+// TOGGLE LIKE
+// =========================
+
+    fun toggleLike(
+        recipeId: String,
+        userId: String,
+        isCurrentlyLiked: Boolean
+    ) {
+
+        viewModelScope.launch {
+
+            try {
+
+                repository.toggleLike(
+                    recipeId = recipeId,
+                    userId = userId,
+                    isCurrentlyLiked = isCurrentlyLiked
+                )
+
+            } catch (e: Exception) {
+
+                e.printStackTrace()
+            }
+        }
+    }
 }

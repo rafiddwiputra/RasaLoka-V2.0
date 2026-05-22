@@ -8,6 +8,7 @@ import com.rasaloka.app.data.model.Recipe
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.flow.map
+import com.google.firebase.firestore.FieldValue
 
 class RecipeRepository(
     private val recipeDao: RecipeDao,
@@ -44,6 +45,7 @@ class RecipeRepository(
                         steps = entity.steps,
                         imageBase64 = entity.imageBase64,
                         likesCount = entity.likesCount,
+                        likedBy = entity.likedBy,
                         commentsCount = entity.commentsCount,
                         createdAt = entity.createdAt
                     )
@@ -138,4 +140,41 @@ class RecipeRepository(
 
         return document.toObject(Recipe::class.java)
     }
+
+// =========================
+// TOGGLE LIKE
+// =========================
+
+    suspend fun toggleLike(
+        recipeId: String,
+        userId: String,
+        isCurrentlyLiked: Boolean
+    ) {
+
+        val recipeRef = firestore
+            .collection("recipes")
+            .document(recipeId)
+
+        if (isCurrentlyLiked) {
+
+            // UNLIKE
+            recipeRef.update(
+                mapOf(
+                    "likesCount" to FieldValue.increment(-1),
+                    "likedBy" to FieldValue.arrayRemove(userId)
+                )
+            ).await()
+
+        } else {
+
+            // LIKE
+            recipeRef.update(
+                mapOf(
+                    "likesCount" to FieldValue.increment(1),
+                    "likedBy" to FieldValue.arrayUnion(userId)
+                )
+            ).await()
+        }
+    }
+
 }

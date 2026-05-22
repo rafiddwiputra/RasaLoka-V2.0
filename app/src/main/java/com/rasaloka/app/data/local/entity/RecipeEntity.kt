@@ -20,6 +20,7 @@ data class RecipeEntity(
     val imageBase64: String,
 
     val likesCount: Int,
+    val likedBy: List<String>,
     val commentsCount: Int,
 
     val createdAt: Long

@@ -10,6 +10,7 @@ data class Recipe(
     val steps: String = "",
     val imageBase64: String = "",
     val likesCount: Int = 0,
+    val likedBy: List<String> = emptyList(),
     val commentsCount: Int = 0,
     val createdAt: Long = System.currentTimeMillis()
 )

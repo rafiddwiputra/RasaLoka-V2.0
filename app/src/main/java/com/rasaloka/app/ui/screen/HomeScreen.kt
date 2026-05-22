@@ -45,6 +45,7 @@ import android.util.Base64
 import androidx.compose.ui.graphics.asImageBitmap
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import com.google.firebase.auth.FirebaseAuth
 import com.rasaloka.app.R
 
 
@@ -68,6 +69,12 @@ fun HomeScreen(navController: NavController) {
 
     val isConnected =
         isInternetAvailable(context)
+
+    val currentUserId =
+        com.google.firebase.auth.FirebaseAuth
+            .getInstance()
+            .currentUser
+            ?.uid ?: ""
 
     val filteredRecipes = recipes.filter {
 
@@ -326,11 +333,16 @@ fun HomeScreen(navController: NavController) {
 
                 ) {
 
+                val currentUserId =
+                    FirebaseAuth
+                        .getInstance()
+                        .currentUser
+                        ?.uid ?: ""
+
                 items(filteredRecipes) { recipe ->
 
-                    var isLiked by remember {
-                        mutableStateOf(false)
-                    }
+                    val isLiked =
+                        recipe.likedBy.contains(currentUserId)
 
                     var isSaved by remember {
                         mutableStateOf(false)
@@ -448,7 +460,14 @@ fun HomeScreen(navController: NavController) {
                                             modifier = Modifier
                                                 .size(20.dp)
                                                 .clickable {
-                                                    isLiked = !isLiked
+
+                                                    viewModel.toggleLike(
+                                                        recipeId = recipe.id,
+                                                        userId = currentUserId,
+                                                        isCurrentlyLiked = isLiked
+                                                    )
+
+                                                    viewModel.fetchOnlineRecipes()
                                                 }
                                         )
 
@@ -456,7 +475,7 @@ fun HomeScreen(navController: NavController) {
 
                                         // ANGKA LIKE
                                         Text(
-                                            text = "25",
+                                            text = recipe.likesCount.toString(),
                                             fontSize = 12.sp,
                                             color = Color.Black
                                         )

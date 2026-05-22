@@ -414,6 +414,7 @@ fun AddRecipeScreen(navController: NavController) {
                                 steps = steps,
                                 imageBase64 = imageBase64,
                                 likesCount = 0,
+                                likedBy = emptyList(),
                                 commentsCount = 0,
                                 createdAt = System.currentTimeMillis()
                             )
@@ -432,6 +433,7 @@ fun AddRecipeScreen(navController: NavController) {
                                 steps = steps,
                                 imageBase64 = imageBase64,
                                 likesCount = 0,
+                                likedBy = emptyList(),
                                 commentsCount = 0,
                                 createdAt = System.currentTimeMillis()
                             )

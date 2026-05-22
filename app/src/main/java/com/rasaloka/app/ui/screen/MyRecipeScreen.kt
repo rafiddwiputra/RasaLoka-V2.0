@@ -307,6 +307,7 @@ fun MyRecipeScreen(navController: NavController) {
                                                     steps = recipe.steps,
                                                     imageBase64 = recipe.imageBase64,
                                                     likesCount = recipe.likesCount,
+                                                    likedBy = recipe.likedBy,
                                                     commentsCount = recipe.commentsCount,
                                                     createdAt = recipe.createdAt
                                                 )

@@ -409,6 +409,7 @@ fun EditRecipeScreen(
                                         steps = updatedRecipe.steps,
                                         imageBase64 = updatedRecipe.imageBase64,
                                         likesCount = updatedRecipe.likesCount,
+                                        likedBy = it.likedBy,
                                         commentsCount = updatedRecipe.commentsCount,
                                         createdAt = updatedRecipe.createdAt
                                     )

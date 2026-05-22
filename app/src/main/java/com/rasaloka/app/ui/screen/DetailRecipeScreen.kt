@@ -38,8 +38,10 @@ import com.rasaloka.app.di.AppModule
 import com.rasaloka.app.viewmodel.RecipeViewModel
 import android.graphics.BitmapFactory
 import android.util.Base64
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.ui.graphics.asImageBitmap
 import com.rasaloka.app.R
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun DetailRecipeScreen(
@@ -62,6 +64,19 @@ fun DetailRecipeScreen(
 
         viewModel.getRecipeById(recipeId)
     }
+
+    val currentUserId =
+        FirebaseAuth
+            .getInstance()
+            .currentUser
+            ?.uid ?: ""
+
+    val isLiked =
+        recipe?.likedBy?.contains(currentUserId)
+            ?: false
+
+    val isConnected =
+        isInternetAvailable(context)
 
     val bahanList =
         recipe?.ingredients
@@ -173,15 +188,58 @@ fun DetailRecipeScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Icon(Icons.Outlined.FavoriteBorder, contentDescription = null, tint = Color.Black, modifier = Modifier.size(22.dp))
+                            Icon(
+                                imageVector =
+                                    if (isLiked)
+                                        Icons.Filled.Favorite
+                                    else
+                                        Icons.Outlined.FavoriteBorder,
+                                contentDescription = null,
+                                tint =
+                                    if (!isConnected)
+                                        Color.Gray
+                                    else if (isLiked)
+                                        Color.Red
+                                    else
+                                        Color.Black,
+                                modifier = Modifier
+                                    .size(22.dp)
+                                    .clickable(enabled = isConnected) {
+
+                                        viewModel.toggleLike(
+                                            recipeId = recipeId,
+                                            userId = currentUserId,
+                                            isCurrentlyLiked = isLiked
+                                        )
+
+                                        viewModel.getRecipeById(recipeId)
+                                    }
+                            )
+
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = "25", fontSize = 13.sp, color = Color.Black)
+
+                            Text(
+                                text = recipe?.likesCount.toString(),
+                                fontSize = 13.sp,
+                                color = Color.Black
+                            )
 
                             Spacer(modifier = Modifier.width(16.dp))
 
-                            Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = null, tint = Color.Black, modifier = Modifier.size(20.dp))
+                            Icon(
+                                Icons.Outlined.ChatBubbleOutline,
+                                contentDescription = null,
+                                tint = Color.Black,
+                                modifier = Modifier.size(20.dp)
+                            )
+
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = "25", fontSize = 13.sp, color = Color.Black)
+
+                            Text(
+                                text = "25",
+                                fontSize = 13.sp,
+                                color = Color.Black
+                            )
 
                             Spacer(modifier = Modifier.weight(1f))
 
