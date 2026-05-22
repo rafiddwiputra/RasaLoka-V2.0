@@ -122,32 +122,20 @@ class RecipeRepository(
         insertRecipe(recipeEntity)
     }
 
-    // =========================
-    // MENGAMBIL RESEP BERDASARKAN ID
-    // =========================
+// =========================
+// MENGAMBIL RESEP BERDASARKAN ID
+// =========================
 
     suspend fun getRecipeById(
         recipeId: String
     ): Recipe? {
 
-        val entity =
-            recipeDao.getRecipeById(recipeId)
+        val document = firestore
+            .collection("recipes")
+            .document(recipeId)
+            .get()
+            .await()
 
-        return entity?.let {
-
-            Recipe(
-                id = it.id,
-                userId = it.userId,
-                username = it.username,
-                title = it.title,
-                description = it.description,
-                ingredients = it.ingredients,
-                steps = it.steps,
-                imageBase64 = it.imageBase64,
-                likesCount = it.likesCount,
-                commentsCount = it.commentsCount,
-                createdAt = it.createdAt
-            )
-        }
+        return document.toObject(Recipe::class.java)
     }
 }
