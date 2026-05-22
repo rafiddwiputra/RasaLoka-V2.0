@@ -45,4 +45,14 @@ class AuthViewModel : ViewModel() {
         fun checkUserLoggedIn() : Boolean {
             return auth.currentUser!=null
         }
+
+    // Ambil UID user login
+    fun getCurrentUserId(): String {
+        return auth.currentUser?.uid ?: ""
+    }
+
+    // Ambil username user login
+    fun getCurrentUsername(): String {
+        return auth.currentUser?.displayName ?: "User"
+    }
     }

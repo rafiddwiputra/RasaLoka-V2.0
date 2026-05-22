@@ -43,6 +43,8 @@ import com.rasaloka.app.viewmodel.RecipeViewModel
 import android.graphics.BitmapFactory
 import android.util.Base64
 import androidx.compose.ui.graphics.asImageBitmap
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import com.rasaloka.app.R
 
 
@@ -56,10 +58,36 @@ fun HomeScreen(navController: NavController) {
             .provideRecipeViewModelFactory(context)
     )
 
-    val recipes by viewModel.recipes.collectAsState()
+    val recipes by viewModel
+        .onlineRecipes
+        .collectAsState()
+
+    var searchQuery by remember {
+        mutableStateOf("")
+    }
+
+    val isConnected =
+        isInternetAvailable(context)
+
+    val filteredRecipes = recipes.filter {
+
+        it.title.contains(
+            searchQuery,
+            ignoreCase = true
+        ) ||
+
+                it.description.contains(
+                    searchQuery,
+                    ignoreCase = true
+                )
+    }
 
     LaunchedEffect(Unit) {
-        viewModel.observeRecipes()
+
+        if (isConnected) {
+
+            viewModel.fetchOnlineRecipes()
+        }
     }
 
     Scaffold(
@@ -221,8 +249,10 @@ fun HomeScreen(navController: NavController) {
 
             // SEARCH BAR
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = searchQuery,
+                onValueChange = {
+                    searchQuery = it
+                },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFFFF5722),
                     unfocusedBorderColor = Color(0xFFFF5722)
@@ -256,6 +286,31 @@ fun HomeScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            if (!isConnected) {
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .background(
+                            Color(0xFFFFE0B2),
+                            RoundedCornerShape(12.dp)
+                        )
+                        .padding(14.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+
+                    Text(
+                        text = "⚠ Tidak ada koneksi internet\nSilakan periksa jaringan Anda",
+                        color = Color(0xFFE65100),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
             // GRID RESEP
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
@@ -271,7 +326,7 @@ fun HomeScreen(navController: NavController) {
 
                 ) {
 
-                items(recipes) { recipe ->
+                items(filteredRecipes) { recipe ->
 
                     var isLiked by remember {
                         mutableStateOf(false)
@@ -458,4 +513,25 @@ fun HomeScreen(navController: NavController) {
             }
         }
     }
+}
+fun isInternetAvailable(
+    context: android.content.Context
+): Boolean {
+
+    val connectivityManager =
+        context.getSystemService(
+            android.content.Context.CONNECTIVITY_SERVICE
+        ) as ConnectivityManager
+
+    val network =
+        connectivityManager.activeNetwork
+            ?: return false
+
+    val capabilities =
+        connectivityManager.getNetworkCapabilities(network)
+            ?: return false
+
+    return capabilities.hasCapability(
+        NetworkCapabilities.NET_CAPABILITY_INTERNET
+    )
 }

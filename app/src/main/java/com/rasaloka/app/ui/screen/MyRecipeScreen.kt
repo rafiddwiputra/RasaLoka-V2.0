@@ -55,10 +55,12 @@ fun MyRecipeScreen(navController: NavController) {
     )
 
     LaunchedEffect(Unit) {
-        viewModel.observeRecipes()
+        viewModel.observeMyRecipes()
     }
 
-    val recipes by viewModel.recipes.collectAsState()
+    val recipes by viewModel
+        .myRecipes
+        .collectAsState()
 
     Scaffold(
         // FOOTER

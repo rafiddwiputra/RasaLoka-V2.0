@@ -19,23 +19,23 @@ class RecipeViewModel(
     // STATE RESEP ONLINE
     // =========================
 
-    private val _recipes =
+    private val _onlineRecipes =
         MutableStateFlow<List<Recipe>>(emptyList())
 
-    val recipes: StateFlow<List<Recipe>> =
-        _recipes.asStateFlow()
+    val onlineRecipes: StateFlow<List<Recipe>> =
+        _onlineRecipes.asStateFlow()
 
-    private val _selectedRecipe =
-        MutableStateFlow<Recipe?>(null)
+    // =========================
+    // STATE RESEP OFFLINE
+    // =========================
 
-    val selectedRecipe: StateFlow<Recipe?> =
-        _selectedRecipe.asStateFlow()
+    private val _myRecipes =
+        MutableStateFlow<List<Recipe>>(emptyList())
 
-// =========================
-// OBSERVE ROOM DATABASE
-// =========================
+    val myRecipes: StateFlow<List<Recipe>> =
+        _myRecipes.asStateFlow()
 
-    fun observeRecipes() {
+    fun observeMyRecipes() {
 
         viewModelScope.launch {
 
@@ -43,8 +43,32 @@ class RecipeViewModel(
                 .observeRecipes()
                 .collect { recipes ->
 
-                    _recipes.value = recipes
+                    _myRecipes.value = recipes
                 }
+        }
+    }
+
+    private val _selectedRecipe =
+        MutableStateFlow<Recipe?>(null)
+
+    val selectedRecipe: StateFlow<Recipe?> =
+        _selectedRecipe.asStateFlow()
+
+    fun fetchOnlineRecipes() {
+
+        viewModelScope.launch {
+
+            try {
+
+                val recipes =
+                    repository.fetchRecipes()
+
+                _onlineRecipes.value = recipes
+
+            } catch (e: Exception) {
+
+                e.printStackTrace()
+            }
         }
     }
 

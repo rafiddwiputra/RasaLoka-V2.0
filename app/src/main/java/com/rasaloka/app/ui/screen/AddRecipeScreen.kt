@@ -44,6 +44,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import java.io.InputStream
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
+import com.rasaloka.app.viewmodel.AuthViewModel
 
 @Composable
 fun AddRecipeScreen(navController: NavController) {
@@ -54,6 +55,12 @@ fun AddRecipeScreen(navController: NavController) {
         factory = AppModule
             .provideRecipeViewModelFactory(context)
     )
+
+    val authViewModel: AuthViewModel = viewModel()
+
+    // mengambil user login
+    val currentUserId = authViewModel.getCurrentUserId()
+    val currentUsername = authViewModel.getCurrentUsername()
 
     // =========================
 // STATE FORM
@@ -399,8 +406,8 @@ fun AddRecipeScreen(navController: NavController) {
 
                             val recipe = com.rasaloka.app.data.model.Recipe(
                                 id = recipeId,
-                                userId = "user_001",
-                                username = "Amanda",
+                                userId = currentUserId,
+                                username = currentUsername,
                                 title = title,
                                 description = description,
                                 ingredients = ingredients,
@@ -417,8 +424,8 @@ fun AddRecipeScreen(navController: NavController) {
 
                             val recipeEntity = RecipeEntity(
                                 id = recipeId,
-                                userId = "user_001",
-                                username = "Amanda",
+                                userId = currentUserId,
+                                username = currentUsername,
                                 title = title,
                                 description = description,
                                 ingredients = ingredients,

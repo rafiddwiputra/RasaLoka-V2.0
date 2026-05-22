@@ -206,7 +206,7 @@ fun EditRecipeScreen(
             ) {
 
                 // ==========================================
-                // KOTAK INPUT FOTO DENGAN GARIS PUTUS-PUTUS (SAMA KAYA TAMBAH)
+                // KOTAK INPUT FOTO
                 // ==========================================
                 Column {
                     Text("Foto Makanan", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
@@ -254,12 +254,33 @@ fun EditRecipeScreen(
                                 imageBytes.size
                             )
 
-                            Image(
-                                bitmap = bitmap.asImageBitmap(),
-                                contentDescription = null,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
+                            Box(
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+
+                                Image(
+                                    bitmap = bitmap.asImageBitmap(),
+                                    contentDescription = null,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.BottomCenter)
+                                        .fillMaxWidth()
+                                        .background(Color.Black.copy(alpha = 0.5f))
+                                        .padding(vertical = 6.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Ganti Foto",
+                                        color = Color.White,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
 
                         } else {
 
@@ -402,7 +423,13 @@ fun EditRecipeScreen(
                             .weight(1f)
                             .height(48.dp)
                     ) {
-                        Text("Simpan Perubahan", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text(
+                            text = "Simpan",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            lineHeight = 14.sp
+                        )
                     }
                 }
             }
@@ -410,7 +437,7 @@ fun EditRecipeScreen(
     }
 }
 
-// Komponen Input Khusus Halaman Edit (Tinggi Ideal 56.dp, Anti-Potong Teks)
+// Input Halaman Edit
 @Composable
 fun EditInputField(
     value: String,
