@@ -45,6 +45,7 @@ import java.io.InputStream
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
 import com.rasaloka.app.viewmodel.AuthViewModel
+import androidx.compose.foundation.layout.imePadding
 
 @Composable
 fun AddRecipeScreen(navController: NavController) {
@@ -212,6 +213,7 @@ fun AddRecipeScreen(navController: NavController) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .imePadding()
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 20.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
