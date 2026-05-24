@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
+import com.rasaloka.app.data.model.Comment
 
 class RecipeViewModel(
     private val repository: RecipeRepository
@@ -185,6 +186,55 @@ class RecipeViewModel(
                     userId = userId,
                     isCurrentlyLiked = isCurrentlyLiked
                 )
+
+            } catch (e: Exception) {
+
+                e.printStackTrace()
+            }
+        }
+    }
+
+// =========================
+// STATE COMMENT
+// =========================
+
+    private val _comments =
+        MutableStateFlow<List<Comment>>(emptyList())
+
+    val comments: StateFlow<List<Comment>> =
+        _comments.asStateFlow()
+
+    fun loadComments(recipeId: String) {
+
+        viewModelScope.launch {
+
+            try {
+
+                val result =
+                    repository.getComments(recipeId)
+
+                _comments.value = result
+
+            } catch (e: Exception) {
+
+                e.printStackTrace()
+            }
+        }
+    }
+
+// =========================
+// TAMBAH COMMENT
+// =========================
+
+    fun addComment(
+        comment: Comment
+    ) {
+
+        viewModelScope.launch {
+
+            try {
+
+                repository.addComment(comment)
 
             } catch (e: Exception) {
 

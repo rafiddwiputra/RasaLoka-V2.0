@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.flow.map
 import com.google.firebase.firestore.FieldValue
+import com.rasaloka.app.data.model.Comment
 
 class RecipeRepository(
     private val recipeDao: RecipeDao,
@@ -175,6 +176,62 @@ class RecipeRepository(
                 )
             ).await()
         }
+    }
+
+// =========================
+// TAMBAH COMMENT
+// =========================
+
+    suspend fun addComment(
+        comment: Comment
+    ) {
+
+        // simpan comment ke subcollection comments
+        firestore
+            .collection("recipes")
+            .document(comment.recipeId)
+            .collection("comments")
+            .document(comment.id)
+            .set(comment)
+            .await()
+
+        // ambil total comment terbaru
+        val commentsSnapshot = firestore
+            .collection("recipes")
+            .document(comment.recipeId)
+            .collection("comments")
+            .get()
+            .await()
+
+        // update commentsCount di recipe
+        firestore
+            .collection("recipes")
+            .document(comment.recipeId)
+            .update(
+                "commentsCount",
+                commentsSnapshot.size()
+            )
+            .await()
+    }
+
+// =========================
+// AMBIL COMMENTS
+// =========================
+
+    suspend fun getComments(
+        recipeId: String
+    ): List<Comment> {
+
+        return firestore
+            .collection("recipes")
+            .document(recipeId)
+            .collection("comments")
+            .get()
+            .await()
+            .toObjects(Comment::class.java)
+            .sortedByDescending {
+                it.createdAt
+            }
     }
 
 }

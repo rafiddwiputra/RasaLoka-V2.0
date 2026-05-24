@@ -77,8 +77,17 @@ fun NavigasiUtama() {
                 ProfilScreen(navController)
             }
 
-            composable("comment") {
-                CommentScreen(navController)
+            composable(
+                route = "comment/{recipeId}"
+            ) { backStackEntry ->
+
+                val recipeId =
+                    backStackEntry.arguments?.getString("recipeId") ?: ""
+
+                CommentScreen(
+                    navController = navController,
+                    recipeId = recipeId
+                )
             }
 
             composable("add_recipe") {

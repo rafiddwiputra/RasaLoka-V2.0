@@ -23,18 +23,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import java.util.UUID
+import com.google.firebase.auth.FirebaseAuth
+import com.rasaloka.app.viewmodel.RecipeViewModel
+import com.rasaloka.app.data.model.Comment
+import com.rasaloka.app.di.AppModule
+import androidx.compose.foundation.layout.imePadding
 
 // 1. Struktur Data Komentar
-data class Comment(val name: String, val text: String)
 
 // 2. Data Dummy (Isi Komentar)
-val dummyComments = listOf(
-    Comment("Amanda", "Terima kasih untuk resepnyaaa"),
-    Comment("Pawestri", "Terima kasih untuk resepnyaaa"),
-    Comment("Fahma", "Terima kasih untuk resepnyaaa"),
-    Comment("Rafid", "Terima kasih untuk resepnyaaa"),
-    Comment("Putri", "Terima kasih untuk resepnyaaa")
-)
 
 // 3. Desain Komponen Kotak Komentar (Masing-masing pakai Card Putih)
 @Composable
@@ -54,7 +59,7 @@ fun CommentItem(comment: Comment) {
                 .fillMaxWidth()
         ) {
             Text(
-                text = comment.name,
+                text = comment.username,
                 fontWeight = FontWeight.Bold,
                 fontSize = 15.sp,
                 color = Color.Black
@@ -69,58 +74,106 @@ fun CommentItem(comment: Comment) {
     }
 }
 
-// 4. Halaman Utama Komentar
+// Untuk Komentar
 @Composable
-fun CommentScreen(navController: NavController) {
+fun CommentScreen(
+    navController: NavController,
+    recipeId: String
+) {
+    val context = navController.context
+
+    val viewModel: RecipeViewModel = viewModel(
+        factory = AppModule.provideRecipeViewModelFactory(context)
+    )
+
+    LaunchedEffect(recipeId) {
+        viewModel.loadComments(recipeId)
+    }
+
+    val comments = viewModel.comments.collectAsState().value
+
+    var commentText by remember {
+        mutableStateOf("")
+    }
+
     Scaffold(
         // BOTTOM BAR (Input Komentar Oranye Pendek + Bottom Navigation Beranda Aktif)
         bottomBar = {
             Column(
-                modifier = Modifier.background(Color(0xFFFFF9F3))
+                modifier = Modifier
+                    .background(Color(0xFFFFF9F3))
             ) {
 
-                // ==================== DISINI BAGIAN YANG DIGANTI ====================
-                // Menggunakan OutlinedTextField asli: memicu keyboard, lebih tinggi, dan berjarak dari bottom nav
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
-                    readOnly = true, // Trik agar keyboard muncul saat diklik tapi belum bisa ngetik
-                    placeholder = {
-                        Text(text = "Beri Komentar...", color = Color.Gray, fontSize = 14.sp)
-                    },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Send,
-                            contentDescription = "Send",
-                            tint = Color(0xFFFF5722),
-                            modifier = Modifier.size(20.dp)
-                        )
-                    },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFFFF5722),
-                        unfocusedBorderColor = Color(0xFFFF5722),
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White
-                    ),
-                    shape = RoundedCornerShape(30.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 6.dp) // Lebar pas dengan search bar (padding 16)
-                        .height(54.dp) // Lebih tebal, pas di jari dan mudah diklik
-                )
+                Column(
+                    modifier = Modifier.imePadding()
+                ) {
+                    OutlinedTextField(
+                        value = commentText,
+                        onValueChange = {
+                            commentText = it
+                        },
+                        placeholder = {
+                            Text(text = "Beri Komentar...", color = Color.Gray, fontSize = 14.sp)
+                        },
+                        trailingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Send,
+                                contentDescription = "Send",
+                                tint = Color(0xFFFF5722),
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .clickable {
 
-                // Jarak pembatas agar kolom komentar naik (tidak mepet dengan Bottom Nav)
-                Spacer(modifier = Modifier.height(16.dp))
-                // ====================================================================
+                                        if (commentText.isNotBlank()) {
 
-                // BOTTOM NAVIGATION (Beranda ACTIVE)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(65.dp)
-                        .background(Color.White),
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    verticalAlignment = Alignment.CenterVertically
+                                            val user = FirebaseAuth
+                                                .getInstance()
+                                                .currentUser
+
+                                            val comment = Comment(
+                                                id = UUID.randomUUID().toString(),
+                                                recipeId = recipeId,
+                                                userId = user?.uid ?: "",
+                                                username = user?.displayName ?: "User",
+                                                text = commentText
+                                            )
+
+                                            viewModel.addComment(comment)
+
+                                            commentText = ""
+
+                                            viewModel.loadComments(recipeId)
+                                        }
+                                    }
+                            )
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFFFF5722),
+                            unfocusedBorderColor = Color(0xFFFF5722),
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(30.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 6.dp)
+                            .height(54.dp)
+                    )
+
+                    // Jarak pembatas agar kolom komentar naik (tidak mepet dengan Bottom Nav)
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                }
+                    // ====================================================================
+
+                    // BOTTOM NAVIGATION (Beranda ACTIVE)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(65.dp)
+                            .background(Color.White),
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        verticalAlignment = Alignment.CenterVertically
                 ) {
                     // HOME ACTIVE
                     Column(
@@ -231,11 +284,14 @@ fun CommentScreen(navController: NavController) {
             // DAFTAR KOMENTAR DENGAN CARD
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .weight(1f)
+                    .fillMaxWidth()
                     .padding(horizontal = 18.dp),
-                contentPadding = PaddingValues(bottom = 16.dp)
+                contentPadding = PaddingValues(
+                    bottom = 16.dp
+                )
             ) {
-                items(dummyComments) { comment ->
+                items(comments) { comment ->
                     CommentItem(comment)
                 }
             }

@@ -490,7 +490,9 @@ fun HomeScreen(navController: NavController) {
                                             modifier = Modifier
                                                 .size(18.dp)
                                                 .clickable {
-                                                    navController.navigate("comment")
+                                                    navController.navigate(
+                                                        "comment/${recipe.id}"
+                                                    )
                                                 }
                                         )
 
@@ -498,7 +500,7 @@ fun HomeScreen(navController: NavController) {
 
                                         // ANGKA COMMENT
                                         Text(
-                                            text = "25",
+                                            text = recipe.commentsCount.toString(),
                                             fontSize = 12.sp,
                                             color = Color.Black
                                         )

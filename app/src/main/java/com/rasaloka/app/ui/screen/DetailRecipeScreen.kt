@@ -230,13 +230,20 @@ fun DetailRecipeScreen(
                                 Icons.Outlined.ChatBubbleOutline,
                                 contentDescription = null,
                                 tint = Color.Black,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .clickable {
+
+                                        navController.navigate(
+                                            "comment/$recipeId"
+                                        )
+                                    }
                             )
 
                             Spacer(modifier = Modifier.width(6.dp))
 
                             Text(
-                                text = "25",
+                                text = recipe?.commentsCount.toString(),
                                 fontSize = 13.sp,
                                 color = Color.Black
                             )
