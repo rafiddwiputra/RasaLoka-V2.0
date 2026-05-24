@@ -42,6 +42,11 @@ object AppModule {
     ) = provideDatabase(context)
         .recipeDao()
 
+    fun provideSavedRecipeDao(
+        context: Context
+    ) = provideDatabase(context)
+        .savedRecipeDao()
+
     // =========================
     // FIRESTORE
     // =========================
@@ -60,6 +65,7 @@ object AppModule {
 
         return RecipeRepository(
             recipeDao = provideRecipeDao(context),
+            savedRecipeDao = provideSavedRecipeDao(context),
             firestore = provideFirestore()
         )
     }

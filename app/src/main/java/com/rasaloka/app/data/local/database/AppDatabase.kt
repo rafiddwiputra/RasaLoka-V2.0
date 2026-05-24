@@ -5,10 +5,14 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.rasaloka.app.data.local.dao.RecipeDao
 import com.rasaloka.app.data.local.entity.RecipeEntity
+import com.rasaloka.app.data.local.entity.SavedRecipeEntity
+import com.rasaloka.app.data.local.dao.SavedRecipeDao
 
 @Database(
-    entities = [RecipeEntity::class],
-    version = 2,
+    entities = [
+        RecipeEntity::class,
+        SavedRecipeEntity::class],
+    version = 3,
     exportSchema = false
 )
 
@@ -17,5 +21,6 @@ import com.rasaloka.app.data.local.entity.RecipeEntity
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun recipeDao(): RecipeDao
+    abstract fun savedRecipeDao(): SavedRecipeDao
 
 }

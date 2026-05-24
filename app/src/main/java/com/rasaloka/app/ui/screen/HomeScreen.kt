@@ -47,6 +47,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import com.google.firebase.auth.FirebaseAuth
 import com.rasaloka.app.R
+import com.rasaloka.app.data.local.entity.SavedRecipeEntity
 
 
 @Composable
@@ -348,6 +349,14 @@ fun HomeScreen(navController: NavController) {
                         mutableStateOf(false)
                     }
 
+                    LaunchedEffect(Unit) {
+
+                        isSaved = viewModel.isRecipeSaved(
+                            recipe.id,
+                            currentUserId
+                        )
+                    }
+
                     Card(
                         shape = RoundedCornerShape(16.dp),
                         elevation = CardDefaults.cardElevation(4.dp),
@@ -515,15 +524,49 @@ fun HomeScreen(navController: NavController) {
 
                                         contentDescription = "Save",
 
-                                        tint = if (isSaved)
-                                            Color(0xFFFF5722)
-                                        else
-                                            Color.Gray,
+                                        tint =
+
+                                            if (!isConnected)
+                                                Color.LightGray
+
+                                            else if (isSaved)
+                                                Color(0xFFFF5722)
+
+                                            else
+                                                Color.Gray,
 
                                         modifier = Modifier
                                             .size(20.dp)
-                                            .clickable {
-                                                isSaved = !isSaved
+                                            .clickable(
+
+                                                enabled = isConnected
+
+                                            ) {
+
+                                                if (isSaved) {
+
+                                                    viewModel.unsaveRecipe(
+                                                        recipeId = recipe.id,
+                                                        userId = currentUserId
+                                                    )
+
+                                                    isSaved = false
+
+                                                } else {
+
+                                                    viewModel.saveRecipe(
+
+                                                        SavedRecipeEntity(
+                                                            recipeId = recipe.id,
+                                                            userId = currentUserId,
+                                                            title = recipe.title,
+                                                            description = recipe.description,
+                                                            imageBase64 = recipe.imageBase64
+                                                        )
+                                                    )
+
+                                                    isSaved = true
+                                                }
                                             }
                                     )
                                 }

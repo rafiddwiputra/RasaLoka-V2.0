@@ -38,10 +38,12 @@ import com.rasaloka.app.di.AppModule
 import com.rasaloka.app.viewmodel.RecipeViewModel
 import android.graphics.BitmapFactory
 import android.util.Base64
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.ui.graphics.asImageBitmap
 import com.rasaloka.app.R
 import com.google.firebase.auth.FirebaseAuth
+import com.rasaloka.app.data.local.entity.SavedRecipeEntity
 
 @Composable
 fun DetailRecipeScreen(
@@ -77,6 +79,18 @@ fun DetailRecipeScreen(
 
     val isConnected =
         isInternetAvailable(context)
+
+    var isSaved by remember {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(recipeId) {
+
+        isSaved = viewModel.isRecipeSaved(
+            recipeId,
+            currentUserId
+        )
+    }
 
     val bahanList =
         recipe?.ingredients
@@ -229,10 +243,21 @@ fun DetailRecipeScreen(
                             Icon(
                                 Icons.Outlined.ChatBubbleOutline,
                                 contentDescription = null,
-                                tint = Color.Black,
+
+                                tint =
+
+                                    if (!isConnected)
+                                        Color.Gray
+                                    else
+                                        Color.Black,
+
                                 modifier = Modifier
                                     .size(20.dp)
-                                    .clickable {
+                                    .clickable(
+
+                                        enabled = isConnected
+
+                                    ) {
 
                                         navController.navigate(
                                             "comment/$recipeId"
@@ -250,7 +275,63 @@ fun DetailRecipeScreen(
 
                             Spacer(modifier = Modifier.weight(1f))
 
-                            Icon(Icons.Outlined.BookmarkBorder, contentDescription = null, tint = Color.Black, modifier = Modifier.size(22.dp))
+                            Icon(
+
+                                imageVector = if (isSaved)
+                                    Icons.Filled.Bookmark
+                                else
+                                    Icons.Outlined.BookmarkBorder,
+
+                                contentDescription = null,
+
+                                tint =
+
+                                    if (!isConnected)
+                                        Color.LightGray
+
+                                    else if (isSaved)
+                                        Color(0xFFFF5722)
+
+                                    else
+                                        Color.Black,
+
+                                modifier = Modifier
+                                    .size(22.dp)
+                                    .clickable(
+
+                                        enabled = isConnected
+
+                                    ) {
+
+                                        if (isSaved) {
+
+                                            viewModel.unsaveRecipe(
+                                                recipeId = recipeId,
+                                                userId = currentUserId
+                                            )
+
+                                            isSaved = false
+
+                                        } else {
+
+                                            recipe?.let {
+
+                                                viewModel.saveRecipe(
+
+                                                    SavedRecipeEntity(
+                                                        recipeId = it.id,
+                                                        userId = currentUserId,
+                                                        title = it.title,
+                                                        description = it.description,
+                                                        imageBase64 = it.imageBase64
+                                                    )
+                                                )
+
+                                                isSaved = true
+                                            }
+                                        }
+                                    }
+                            )
                         }
                     }
 

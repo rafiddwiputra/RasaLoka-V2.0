@@ -9,10 +9,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.flow.map
 import com.google.firebase.firestore.FieldValue
+import com.rasaloka.app.data.local.dao.SavedRecipeDao
+import com.rasaloka.app.data.local.entity.SavedRecipeEntity
 import com.rasaloka.app.data.model.Comment
 
 class RecipeRepository(
     private val recipeDao: RecipeDao,
+    private val savedRecipeDao: SavedRecipeDao,
     private val firestore: FirebaseFirestore
 ) {
 
@@ -234,4 +237,45 @@ class RecipeRepository(
             }
     }
 
+    // =========================
+// SAVE RECIPE
+// =========================
+
+    suspend fun saveRecipe(
+        savedRecipe: SavedRecipeEntity
+    ) {
+
+        savedRecipeDao.saveRecipe(savedRecipe)
+    }
+
+    fun getSavedRecipes(
+        userId: String
+    ): Flow<List<SavedRecipeEntity>> {
+
+        return savedRecipeDao
+            .getSavedRecipes(userId)
+    }
+
+    suspend fun unsaveRecipe(
+        recipeId: String,
+        userId: String
+    ) {
+
+        savedRecipeDao.unsaveRecipe(
+            recipeId,
+            userId
+        )
+    }
+
+    suspend fun isRecipeSaved(
+        recipeId: String,
+        userId: String
+    ): Boolean {
+
+        return savedRecipeDao
+            .isRecipeSaved(
+                recipeId,
+                userId
+            )
+    }
 }

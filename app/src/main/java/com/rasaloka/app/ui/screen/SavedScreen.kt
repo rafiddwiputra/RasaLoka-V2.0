@@ -30,30 +30,48 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import com.rasaloka.app.R
-
-data class SavedRecipe(
-    val title: String,
-    val image: Int
-)
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.rasaloka.app.di.AppModule
+import com.rasaloka.app.viewmodel.RecipeViewModel
+import android.graphics.BitmapFactory
+import android.util.Base64
+import androidx.compose.ui.graphics.asImageBitmap
 
 @Composable
 fun SavedScreen(navController: NavController) {
 
-    val savedRecipes = listOf(
-        SavedRecipe("Margherita Pizza", R.drawable.pizza),
-        SavedRecipe("Grilled Salmon", R.drawable.salmon),
-        SavedRecipe("Margherita Pizza", R.drawable.pizza),
-        SavedRecipe("Grilled Salmon", R.drawable.salmon),
-        SavedRecipe("Margherita Pizza", R.drawable.pizza),
-        SavedRecipe("Grilled Salmon", R.drawable.salmon),
-        SavedRecipe("Margherita Pizza", R.drawable.pizza),
-        SavedRecipe("Grilled Salmon", R.drawable.salmon),
+    val context = LocalContext.current
+
+    val viewModel: RecipeViewModel = viewModel(
+        factory = AppModule
+            .provideRecipeViewModelFactory(context)
     )
+
+    val currentUserId =
+        FirebaseAuth
+            .getInstance()
+            .currentUser
+            ?.uid ?: ""
+
+    val savedRecipes by viewModel
+        .savedRecipes
+        .collectAsState()
+
+    val isConnected =
+        isInternetAvailable(context)
+
+    LaunchedEffect(Unit) {
+
+        viewModel.observeSavedRecipes(
+            currentUserId
+        )
+    }
 
     Scaffold(
 
@@ -237,27 +255,61 @@ fun SavedScreen(navController: NavController) {
 
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { navController.navigate("detail_recipe") }
+                            .clickable {
+
+                                navController.navigate(
+                                    "detail_recipe/${recipe.recipeId}"
+                                )
+                            }
                     ) {
 
                         Column {
 
-                            Image(
-                                painter = painterResource(id = recipe.image),
-                                contentDescription = null,
+                            if (recipe.imageBase64.isNotEmpty()) {
 
-                                contentScale = ContentScale.Crop,
+                                val imageBytes = Base64.decode(
+                                    recipe.imageBase64,
+                                    Base64.DEFAULT
+                                )
 
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(120.dp)
-                                    .clip(
-                                        RoundedCornerShape(
-                                            topStart = 16.dp,
-                                            topEnd = 16.dp
+                                val bitmap = BitmapFactory.decodeByteArray(
+                                    imageBytes,
+                                    0,
+                                    imageBytes.size
+                                )
+
+                                Image(
+                                    bitmap = bitmap.asImageBitmap(),
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(120.dp)
+                                        .clip(
+                                            RoundedCornerShape(
+                                                topStart = 16.dp,
+                                                topEnd = 16.dp
+                                            )
                                         )
-                                    )
-                            )
+                                )
+
+                            } else {
+
+                                Image(
+                                    painter = painterResource(id = R.drawable.pizza),
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(120.dp)
+                                        .clip(
+                                            RoundedCornerShape(
+                                                topStart = 16.dp,
+                                                topEnd = 16.dp
+                                            )
+                                        )
+                                )
+                            }
 
                             Column(
                                 modifier = Modifier.padding(10.dp)
@@ -272,9 +324,10 @@ fun SavedScreen(navController: NavController) {
                                 Spacer(modifier = Modifier.height(4.dp))
 
                                 Text(
-                                    text = "Makanan lezat dan mudah dibuat",
+                                    text = recipe.description,
                                     fontSize = 11.sp,
-                                    color = Color.Gray
+                                    color = Color.Gray,
+                                    maxLines = 2
                                 )
 
                                 Spacer(modifier = Modifier.height(8.dp))
@@ -284,27 +337,27 @@ fun SavedScreen(navController: NavController) {
                                     horizontalArrangement = Arrangement.End
                                 ) {
 
-                                    var isSaved by remember {
-                                        mutableStateOf(true)
-                                    }
-
                                     Icon(
-                                        imageVector = if (isSaved)
-                                            Icons.Filled.Bookmark
-                                        else
-                                            Icons.Outlined.BookmarkBorder,
-
+                                        imageVector = Icons.Filled.Bookmark,
                                         contentDescription = "Save",
+                                        tint =
 
-                                        tint = if (isSaved)
-                                            Color(0xFFFF5722)
-                                        else
-                                            Color.Gray,
-
+                                            if (!isConnected)
+                                                Color.LightGray
+                                            else
+                                                Color(0xFFFF5722),
                                         modifier = Modifier
                                             .size(18.dp)
-                                            .clickable {
-                                                isSaved = !isSaved
+                                            .clickable(
+
+                                                enabled = isConnected
+
+                                            ) {
+
+                                                viewModel.unsaveRecipe(
+                                                    recipeId = recipe.recipeId,
+                                                    userId = currentUserId
+                                                )
                                             }
                                     )
                                 }

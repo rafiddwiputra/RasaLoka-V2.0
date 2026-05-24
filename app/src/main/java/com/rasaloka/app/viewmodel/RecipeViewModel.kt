@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
 import com.rasaloka.app.data.model.Comment
+import com.rasaloka.app.data.local.entity.SavedRecipeEntity
 
 class RecipeViewModel(
     private val repository: RecipeRepository
@@ -192,6 +193,96 @@ class RecipeViewModel(
                 e.printStackTrace()
             }
         }
+    }
+
+// =========================
+// STATE SAVED RECIPES
+// =========================
+
+    private val _savedRecipes =
+        MutableStateFlow<List<SavedRecipeEntity>>(emptyList())
+
+    val savedRecipes: StateFlow<List<SavedRecipeEntity>> =
+        _savedRecipes.asStateFlow()
+
+// =========================
+// OBSERVE SAVED RECIPES
+// =========================
+
+    fun observeSavedRecipes(
+        userId: String
+    ) {
+
+        viewModelScope.launch {
+
+            repository
+                .getSavedRecipes(userId)
+                .collect { recipes ->
+
+                    _savedRecipes.value = recipes
+                }
+        }
+    }
+
+// =========================
+// SAVE RECIPE
+// =========================
+
+    fun saveRecipe(
+        savedRecipe: SavedRecipeEntity
+    ) {
+
+        viewModelScope.launch {
+
+            try {
+
+                repository.saveRecipe(savedRecipe)
+
+            } catch (e: Exception) {
+
+                e.printStackTrace()
+            }
+        }
+    }
+
+// =========================
+// UNSAVE RECIPE
+// =========================
+
+    fun unsaveRecipe(
+        recipeId: String,
+        userId: String
+    ) {
+
+        viewModelScope.launch {
+
+            try {
+
+                repository.unsaveRecipe(
+                    recipeId,
+                    userId
+                )
+
+            } catch (e: Exception) {
+
+                e.printStackTrace()
+            }
+        }
+    }
+
+// =========================
+// CHECK IS SAVED
+// =========================
+
+    suspend fun isRecipeSaved(
+        recipeId: String,
+        userId: String
+    ): Boolean {
+
+        return repository.isRecipeSaved(
+            recipeId,
+            userId
+        )
     }
 
 // =========================
