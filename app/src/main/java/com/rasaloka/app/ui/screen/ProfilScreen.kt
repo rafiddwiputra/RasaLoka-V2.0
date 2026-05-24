@@ -20,9 +20,31 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.compose.runtime.*
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.rasaloka.app.viewmodel.AuthViewModel
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
 
 @Composable
-fun ProfilScreen(navController: NavController) {
+fun ProfilScreen(
+    navController: NavController,
+    authViewModel: AuthViewModel = viewModel()
+) {
+
+    val context = LocalContext.current
+
+    val isConnected =
+        isInternetAvailable(context)
+
+    var username by remember {
+        mutableStateOf(
+            authViewModel.getCurrentUsername()
+        )
+    }
+
+    val email =
+        authViewModel.getCurrentUserEmail()
 
     Scaffold(
 
@@ -183,6 +205,31 @@ fun ProfilScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            if (!isConnected) {
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .background(
+                            Color(0xFFFFE0B2),
+                            RoundedCornerShape(12.dp)
+                        )
+                        .padding(14.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+
+                    Text(
+                        text = "⚠ Tidak ada koneksi internet\nNama tidak dapat diperbarui",
+                        color = Color(0xFFE65100),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(18.dp))
+            }
+
             // CONTENT PROFILE
             Column(
                 modifier = Modifier
@@ -226,8 +273,13 @@ fun ProfilScreen(navController: NavController) {
 
                 // INPUT NAMA (Ubah warna border unfocused ke oren)
                 OutlinedTextField(
-                    value = "Pawestri Wahyuning Gusti",
-                    onValueChange = {},
+                    value = username,
+
+                    onValueChange = {
+                        username = it
+                    },
+
+                    enabled = isConnected,
 
                     modifier = Modifier.fillMaxWidth(),
 
@@ -253,8 +305,9 @@ fun ProfilScreen(navController: NavController) {
 
                 // INPUT EMAIL (Ubah warna border unfocused ke oren)
                 OutlinedTextField(
-                    value = "PawestriWahyuning@gmail.com",
+                    value = email,
                     onValueChange = {},
+                    readOnly = true,
 
                     modifier = Modifier.fillMaxWidth(),
 
@@ -281,7 +334,15 @@ fun ProfilScreen(navController: NavController) {
                             Color.White,
                             RoundedCornerShape(14.dp)
                         )
-                        .clickable { }
+                        .clickable {
+
+                            authViewModel.logout()
+
+                            navController.navigate("login") {
+
+                                popUpTo(0)
+                            }
+                        }
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -315,7 +376,44 @@ fun ProfilScreen(navController: NavController) {
 
             // BUTTON SIMPAN
             Button(
-                onClick = { },
+                onClick = {
+
+                    if (!isConnected) {
+
+                        Toast.makeText(
+                            context,
+                            "Tidak ada koneksi internet",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        return@Button
+                    }
+
+                    authViewModel.updateUsername(
+
+                        newUsername = username,
+
+                        onSuccess = {
+
+                            Toast.makeText(
+                                context,
+                                "Nama berhasil diperbarui",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        },
+
+                        onError = {
+
+                            Toast.makeText(
+                                context,
+                                it,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    )
+                },
+
+                enabled = isConnected,
 
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFFFF5722)

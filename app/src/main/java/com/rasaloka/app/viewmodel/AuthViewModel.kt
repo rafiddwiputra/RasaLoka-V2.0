@@ -5,6 +5,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.rasaloka.app.data.remote.FirebaseService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import com.google.firebase.auth.UserProfileChangeRequest
 
 // Kode ini adalah state atau sebuah kondisi layar login
 sealed class LoginState{
@@ -55,4 +56,52 @@ class AuthViewModel : ViewModel() {
     fun getCurrentUsername(): String {
         return auth.currentUser?.displayName ?: "User"
     }
+
+    // Ambil email user login
+    fun getCurrentUserEmail(): String {
+        return auth.currentUser?.email ?: ""
     }
+
+    // Update nama user
+    fun updateUsername(
+        newUsername: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+
+        val user = auth.currentUser
+
+        if (user == null) {
+            onError("User tidak ditemukan")
+            return
+        }
+
+        val profileUpdates =
+            UserProfileChangeRequest.Builder()
+                .setDisplayName(newUsername)
+                .build()
+
+        user.updateProfile(profileUpdates)
+            .addOnCompleteListener { task ->
+
+                if (task.isSuccessful) {
+
+                    onSuccess()
+
+                } else {
+
+                    onError(
+                        task.exception?.message
+                            ?: "Gagal update nama"
+                    )
+                }
+            }
+    }
+
+    // Logout user
+    fun logout() {
+
+        auth.signOut()
+    }
+
+}
