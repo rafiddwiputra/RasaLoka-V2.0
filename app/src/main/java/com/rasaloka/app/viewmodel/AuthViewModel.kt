@@ -17,7 +17,7 @@ sealed class LoginState{
 
 class AuthViewModel : ViewModel() {
 
-    // Memanggil Firebase dari gudang utama yang sudah dibuat sebelumnya
+    // Memanggil Firebase di file FirebaseService
     private val auth = FirebaseService.auth
 
     // Variabel yang digunakan untuk menyimpan kondisi login saat ini (agar UI bisa bereaksi)
@@ -42,7 +42,7 @@ class AuthViewModel : ViewModel() {
                 }
             }
     }
-        // Fungsi yang digunakan untuk cek apakah user sudah login sebelumnya (Fungsinya agar user tidak login berulang)
+        // Fungsi yang digunakan untuk cek apakah user sudah login sebelumnya
         fun checkUserLoggedIn() : Boolean {
             return auth.currentUser!=null
         }
@@ -69,8 +69,8 @@ class AuthViewModel : ViewModel() {
         onError: (String) -> Unit
     ) {
 
+        // cek user di firebase
         val user = auth.currentUser
-
         if (user == null) {
             onError("User tidak ditemukan")
             return
@@ -81,15 +81,12 @@ class AuthViewModel : ViewModel() {
                 .setDisplayName(newUsername)
                 .build()
 
+        // Update nama
         user.updateProfile(profileUpdates)
             .addOnCompleteListener { task ->
-
                 if (task.isSuccessful) {
-
                     onSuccess()
-
                 } else {
-
                     onError(
                         task.exception?.message
                             ?: "Gagal update nama"

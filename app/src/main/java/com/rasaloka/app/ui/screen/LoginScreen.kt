@@ -29,8 +29,10 @@ fun LoginScreen(
     authViewModel: AuthViewModel = viewModel(),
     onLoginSuccess: () -> Unit
 ) {
+    // Cek kondisi layar Idle, Loading, Success, atau error
     val context = LocalContext.current
     val loginState by authViewModel.loginState.collectAsState()
+
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -43,17 +45,16 @@ fun LoginScreen(
                     authViewModel.signInWithGoogle(token)
                 }
             } catch (e: ApiException) {
-
             }
         }
     }
 
+    // Cek apakah user sudah pernah melakukan login sebelumnya atau tidak
     LaunchedEffect(Unit) {
         if (authViewModel.checkUserLoggedIn()) {
             onLoginSuccess()
         }
     }
-
     LaunchedEffect(loginState) {
         if (loginState is LoginState.Success) {
             onLoginSuccess()
@@ -76,6 +77,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(40.dp))
             FormInputSection()
             Spacer(modifier = Modifier.height(32.dp))
+            // Laucher
             ActionButtonsSection(
                 onGoogleLoginClick = {
                     val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -86,6 +88,7 @@ fun LoginScreen(
                     launcher.launch(googleSignInClient.signInIntent)
                 }
             )
+            //
             if (loginState is LoginState.Error) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
@@ -93,6 +96,7 @@ fun LoginScreen(
                     color = MaterialTheme.colorScheme.error
                 )
             }
+
             if (loginState is LoginState.Loading) {
                 Spacer(modifier = Modifier.height(16.dp))
                 CircularProgressIndicator(color = Color(0xFFFF5722))
